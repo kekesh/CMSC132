@@ -1,0 +1,86 @@
+\documentclass[english, 10pt]{article}
+\usepackage[sexy]{evan}
+\usepackage{inconsolata}
+\usepackage[shellescape]{gmp}
+\usepackage{titlesec}
+\usepackage{color}
+\definecolor{editorGray}{rgb}{0.95, 0.95, 0.95}
+\definecolor{editorOcher}{rgb}{1, 0.5, 0} % #FF7F00 -> rgb(239, 169, 0)
+\definecolor{editorGreen}{rgb}{0, 0.5, 0} % #007C00 -> rgb(0, 124, 0)
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[toc,page]{appendix}
+\usepackage{todonotes}
+\usepackage{blindtext}
+\usepackage{multicol}
+\usepackage{esint}
+
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\allowdisplaybreaks%
+\newcommand{\thiscoursecode}{CMSC 132}
+\newcommand{\thiscoursename}{Intro to Object Oriented Programming II}
+\newcommand{\thisprof}{Prof. Nelson Padua-Perez}
+\newcommand{\me}{Ekesh Kumar}
+\author{Ekesh Kumar\thanks{Email: \mailto{0ekesh@gmail.com}}}
+\newcommand{\thisterm}{Fall 2019}
+\newcommand{\website}{https://www.cs.umd.edu/class/fall2019/cmsc132/}%chktex 8
+\usepackage{ifpdf}
+\ifpdf%
+\DeclareGraphicsRule{*}{mps}{*}{}
+\fi
+\lhead{\textbf{\me} \\ \textbf{\thisprof}}
+\rhead{\textbf{\thiscoursename} \\ \textbf{\thisterm}}
+
+
+
+%%%%% TITLE %%%%%
+\newcommand{\notefront}{%
+\pagenumbering{arabic}
+\begin{center}
+{\small}
+\textbf{\Huge{{\thiscoursecode}}}
+{\Huge \par}
+{\Large{{\thiscoursename}}}\\
+\vspace{0.1in}
+\vspace{0in}\includegraphics[scale=0.3]{umdcs.jpg} \\
+\vspace{0.1in}{\me} \\
+{\thisprof} \ $\bullet$ \ {\thisterm} \ $\bullet$ \ {{University of Maryland}} \\
+{\ttfamily \url{\website}} \\
+\end{center}
+}
+
+
+
+
+\begin{document}\thispagestyle{empty}
+  \notefront
+  \tocandfigures
+  
+  % August
+  \include{aug/aug26}
+  
+
+
+
+\end{document}
