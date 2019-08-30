@@ -1,0 +1,161 @@
+\section{Wednesday, August 30, 2019}
+\subsection{Collections}
+
+The \vocab{Java Collections Framework} is a set of methods and classes that provide support for \vocab{collections}, which are objects that group multiple elements into one unit. There is a collection interface that defines a set of methods that certain classes must have. It turns out that ArrayList is in the collections framework, and it implements the set of required methods (such as \verb!.add(), .clear(), .contains()!, and more).
+
+Consider the following code segment:
+
+\begin{lstlisting}
+package miscellaneous;
+
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+public class CollectionExample {
+
+	public static Collection<Integer> defineElements(boolean arrayFlag, int numberOfValues, int maxValue) {
+		Collection<Integer> elements;
+
+		if (arrayFlag) {
+			elements = new ArrayList<Integer>();
+		} else {
+			elements = new LinkedList<Integer>();
+		}
+
+		for (int j = 0; j < numberOfValues; j++) {
+			elements.add((int) (Math.random() * maxValue + 1));
+		}
+
+		return elements;
+	}
+
+	public static void displayValues(Collection<Integer> data) {
+		if (data.isEmpty()) {
+			System.out.println("Empty Collection");
+		} else {
+			for (Integer value : data)
+				System.out.print(value + " ");
+		}
+	}
+
+	public static void main(String[] args) {
+		Collection<Integer> firstCollection = defineElements(true, 5, 10);
+
+		System.out.println("First Collection:");
+		displayValues(firstCollection);
+
+		System.out.println("\nSecond Collection:");
+		Collection<Integer> secondCollection = defineElements(false, 5, 10);
+		displayValues(secondCollection);
+
+		/* Example of methods defined by the Collection interface */
+		Collection<Integer> union = new ArrayList<Integer>();
+
+		/* Combining elements */
+		union.addAll(firstCollection);
+		union.addAll(secondCollection);
+		System.out.println("\nUnion");
+		displayValues(union);
+
+		/* Checking if elements from one collection are present in antoher */
+		if (union.containsAll(firstCollection))
+			System.out.println("\nIncludes all elements of first collection");
+
+		/* Removing elements in union present in second collection */
+		union.removeAll(secondCollection);
+		System.out.println("After removing");
+		displayValues(union);
+
+		/* Clearing the collection */
+		union.clear();
+		System.out.println();
+		displayValues(union);
+	}
+}
+\end{lstlisting}
+
+This code segment is another demonstration of how we can utilize the fact that some objects are instances of other types. The \verb!defineElements! takes in various parameters and returns either a LinkedList (another type list provided in the Collections Framework) or an ArrayList depending on the parameters provided. The reason why this is allowed is because of the ``is-a" relationship between ArrayLists, LinkedLists, and Collections. More specifically, both ArrayLists and LinkedLists are collections. Consequently, since the return type of this function is a Collection, we are allowed to return any object that is an instance of Collection. 
+
+On the other hand, the \verb!displayValues! method takes in a Collection type, and we're allowed to pass in any object that is an instance of Collection, as seen in the driver. 
+
+
+%Yesterday, we saw an \verb!Animal! interface, and we analyzed the \verb!Dog! and \verb!Piranha! classes which implemented this interface. Continuing with this example, the following code segment illustrates how we can 
+Collections are also really useful because they have built-in functions like \verb!.shuffle()! (which scrambles the collection) and \verb!.sort()!, which sorts the function. 
+
+\subsection{Generics}
+
+We typically write, \verb!ArrayList<Integer> = new ArrayList<Integer>()!, when we're instantiating an ArrayList of integers. Likewise, we could write, \verb!ArrayList<Bananas> = new ArrayList<Bananas>()! if we had created a class called \verb!Bananas!, or \verb!ArrayList<String> = new ArrayList<String>()! if we wanted an ArrayList of strings. This is example of \vocab{generics}: we are allowed to pass in whatever type we want our ArrayList to store. 
+
+
+Why are generics useful? Firstly, generics help us reduce the amount of code we need to write. Instead of writing lots of code that gets executed depending on whether the user is using an integer or a string, we can use generics in order to reduce the amount of code needed. The \verb!.add()!, \verb!.remove()! and other methods used by ArrayList are valid no matter what type we are storing in our ArrayList. If we didn't have generics, we'd need to have.
+
+Secondly, generics help us move some casting errors from runtime to compile time. Consider the following code segment:
+
+\begin{lstlisting}
+class A { ... }
+class B { ... }
+List myL = new ArrayList(); // raw type
+myL.add(new A()); // Add an object of type A
+...
+B b = (B) myL.get(0);
+\end{lstlisting}
+
+Here, we've declared two classes, and we've created a List called \verb!myL!. In this example, we have not used any generics (this is called a \vocab{raw type}) since we haven't specified the type that this list will store. Thus, Java will permit us to add whatever we want to this list. This can lead to issues if we don't remember what type is stored at each index (in the above example, for instance, retrieved the first element by casting it as \verb!B! when it is actually of type \verb!A!.). This issue won't be seen until runtime. Using generics, however, would move this error to compile time.
+
+Here is the same code segment but with generics:
+
+\begin{lstlisting}
+class A { ... }
+class B { ... }
+List<A> myL = new ArrayList<A>();
+myL.add(new A());
+A a = myL.get(0);
+...
+B b = (B) myL.get(0); // Compile-time error
+\end{lstlisting}
+
+Now that we've used generics, we'll find the casting error during compile time.
+
+So far, we've only seen how collections use generics. How do we use our own generics? We can parametrize classes, interfaces, and methods using \verb!<X>! notation. For example, we could write, \verb!public class foo<X, Y, Z> {  ... }!, to define a class called \verb!foo! that takes in three types. 
+
+
+\subsection{The Iterable Interface}
+The \vocab{Iterable Interface} defines a method called \verb!Iterator!, which returns an iterator that allows us to traverse a container (particularly lists). ArrayLists in Java implement the iterable interface. 
+
+The following example demonstrates how we can use iterators:
+
+\begin{lstlisting}
+public static void main(String[] args) {
+    ArrayList<String> myList = new ArrayList<String>();
+    myList.add("a");
+    myList.add("b");
+    
+    Iterator<String> it = myList.iterator();
+
+    while (it.hasNext()) {
+        System.out.println(it.next());
+    }
+}
+\end{lstlisting}
+
+This code segment will print out everything in our list \verb!myList!. 
+
+However, it turns out that we don't actually need to handle iterators ourselves. We can use the \vocab{enhanced for loop} (also known as a \vocab{for each loo}), which does this for us. These types of for loops handle the iterator automatically. 
+
+Here's how we can use an enhanced for loop with our previous example:
+
+
+\begin{lstlisting}
+public static void main(String[] args) {
+    ArrayList<String> myList = new ArrayList<String>();
+    myList.add("a");
+    myList.add("b");
+    
+    for (String s : myList) {
+        System.out.println(s);
+    }
+}
+\end{lstlisting}
+
+The for loop in this code segment can be read as, ``for each string \verb!s! in \verb!myList!, print \verb!s!.''

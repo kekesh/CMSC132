@@ -134,4 +134,6 @@ Here are some more things that we should take careful note of: \begin{itemize}
     \item We can rewrite methods that are provided to us. More specifically, \verb!Piranha! implements \verb!Animal!, but it rewrites the \verb!grow()! function that was originally provided to it.
 \end{itemize}
 
-Recall that interfaces define an ``is-a" relationship. Since \verb!Piranha! and \verb!Dog! implement \verb!Animal!, we can now treat them as an \verb!Animal!.
+Recall that interfaces define an ``is-a" relationship. Since \verb!Piranha! and \verb!Dog! implement \verb!Animal!, we can now treat them as an \verb!Animal!. A good way to verify the ``is-a" relationship is the \verb!instanceof! keyword. In Java, \verb!instanceof! allows us to check whether one object is an instance of a specified type (class, subclass, or interface).
+
+To demonstrate, suppose we declare a piranha variable \verb!p!. We could write a conditional such as \verb!if (p instanceof Animal) { /* Code to be executed */}!, in order to make sure that \verb!p! is an instance of \verb!Animal!. Why would we ever need to do this? This is particularly useful when we're casting. If we attempt to cast an object to a subclass of which it is not an instance of, Java throws a \vocab{ClassCastException}. We can prevent this exception by putting the relevant code in a conditional checking the instance of what we're casting. 
