@@ -1,0 +1,145 @@
+\section{Monday, September 9, 2019}
+
+% Inheritance One. No lecture video posted for 2019; used video from 2017.
+\subsection{The Protected Keyword}
+Recall that when a subclass extends a superclass, it cannot access any private fields in the superclass. What happens if we want to permit subclasses of a superclass to access various fields, but we also want to retain some level of privacy? This is where the \vocab{protected} keyword can help us. Like \verb!public! and \verb!private!, the \verb!protected! keyword is used to specify what can access a variable. 
+
+
+When do we declare a variable to be \verb!protected!? We should use the \verb!protected! keyword when we need to access it from the enclosing class (the class it is in) subclasses that extend that class, and other classes in the same package (folder) as the enclosing class. 
+
+Essentially, declaring variables as \verb!protected! allows us to limit the visibility of a variable, while still permitting subclasses to access that variable.
+
+\subsection{Early and Late Binding}
+
+
+Consider the following code segment:
+
+\begin{lstlisting}
+Faculty carol = new Faculty("Carol Tuffteacher", 458, 1995);
+Person p = carol;
+System.out.println(p.toString());
+\end{lstlisting}
+
+Given that both the \verb!Person! and \verb!Faculty! classes implement a \verb!toString()! method, which one should be used when executing the print statement on the third line? Should it be the \verb!Faculty! object's \verb!toString()! method? Or, should it be the \verb!Person! object's \verb!toString()! method? There are good arguments for either choice:
+\begin{itemize}
+    \item One argument is that the variable \verb!p! was initially declared to be of type person. Thus, we should use the Person's \verb!toString()! method. This is known as \vocab{early (static) binding}. The name makes sense since we know early on (as soon as we've declared the object) what method will be used.
+    \item The other argument says that the object to which \verb!p! is referring to was created as a \verb!Faculty! object, so we should use the \verb!Faculty! object's \verb!toString()! method. This is known as \vocab{late (dynamic) binding}. Again, this name is fitting since we don't figure out which method will be called when the person is initially declared.
+\end{itemize}
+
+There are pros and cons to both early binding and late binding. On one hand, early binding is more efficient since the decision of what set of methods should be used is determined at compile-time. On the other hand, late binding allows for more flexibility.
+
+By default, \textbf{Java uses late-binding}, so in our example, the \verb!Faculty!'s \verb!toString()! method will be called. Essentially, late binding says that the method that is called is dependent on the object's actual type, and not the declared type of the referring variable.
+
+
+\subsection{Polymorphism}
+
+Java's use of late binding enables us to use a single reference variable to refer to objects of many different types. In the following code segment, we illustrate this fact by creating an array of various university people:
+
+
+\begin{lstlisting}
+Person[] list = new Person[3];
+list[0] = new Person("Col. Mustard", 10);
+list[1] = new Student("Ms. Scarlet", 20, 1998, 3.2);
+list[2] = new Faculty("Prof. Plum', 30, 1981);
+for (int i = 0; i < list.length; i++) {
+    System.out.println(list[i].toString());
+}
+\end{lstlisting}
+
+The above code segment is perfectly valid, and it will use different \verb!toString()! methods depending on type of the object it at each entry. 
+
+This is an example of \vocab{polymorphism}, which can more concretely be defined as a method of using a single symbol to represent multiple different types. Note that each of \verb!list[1], list[2],! and \verb!list[3]! are polymorphic variables since we can assign to them a \verb!Person, Student!, or \verb!Faculty! type without error.
+
+
+\subsection{getClass and instanceof}
+
+In Java, objects can obtain information about their types dynamically. This is done using the \verb!getClass! and \verb!instanceOf! methods that Java provides. 
+
+
+These methods do exactly what they sound like. The \verb!getClass()! method returns the runtime class of an object. Internally, this is represented as a location in memory. It is also perfectly valid to compare the return-value of \verb!getClass()!. For example, if we have two objects \verb!b1! and \verb!b2!, we could use the conditional \verb!if (b1.getClass() == b2.getClass()) {...}! in order to check whether or not \verb!b1! and \verb!b2! are instances of the same class. This conditional will evaluate to ``true" if both \verb!x! and \verb!y! are of the same type (i.e. both are Strings).
+
+
+Now, consider the following code segment in which \verb!getClass()! returns false:
+
+\begin{lstlisting}
+Person bob = new Person(...);
+Person ted = new Student(...);
+
+if (bob.getClass() == ted.getClass()) { ... } // false (ted is really a Student).
+\end{lstlisting}
+
+The conditional inside of the \verb!if! clause will evaluate to ``false." Why? Because the \verb!getClass()! method compares the runtime class of an object. Here, \verb!ted! was initially declared to be of type \verb!Person!, but it refers to a \verb!Student! type. This example further illustrates the fact that Java uses late (dynamic) binding.
+
+
+
+Next, we'll discuss the \verb!instanceof! keyword.
+
+The \verb@instanceof@ keyword is is used to determine whether one object is an instance of some other class. In terms of inheritance, Class A is an instance of Class B if Class A extends Class B. It's important to remember that \verb!instanceof! is an \textbf{operator} in Java, not a method call. Thus, we do not invoke \verb!.instanceof! on the object (there shouldn't be a period!).
+
+
+The following example illustrates how both \verb!getClass! and \verb!instanceof! operate:
+
+
+\begin{lstlisting}
+package university;
+
+public class InstanceGetClass {
+	public static void main(String[] args) {
+		Person bobp = new Person("Bob", 1);
+		Person teds = new Student("Ted", 2, 1990, 4.0);
+		Person carolf = new Faculty("Carol", 3, 2016);
+
+		/* Notice we are using Faculty variable rather than Person */
+		Faculty drSmithf = new Faculty("DrSmith", 4, 2010);
+
+		if (bobp.getClass() == teds.getClass()) {
+			System.out.println("1. bob and ted associated with same getClass value");
+		}
+
+		if (bobp instanceof Person) {
+			System.out.println("2. bob instance of Person");
+		}
+
+		if (teds instanceof Student) {
+			System.out.println("3. ted instance of Student");
+		}
+
+		if (teds instanceof Person) {
+			System.out.println("4. ted instance of Person");
+		}
+
+		if (bobp instanceof Student) {
+			System.out.println("5. bob instance of Student");
+		}
+
+		if (carolf instanceof Person) {
+			System.out.println("6. carol instance of Person");
+		}
+
+		if (carolf instanceof Student) {
+			System.out.println("7. carol instance of Student");
+		}
+
+		/* Following will not compile (compare against previous one) */
+		/*
+		 * if (drSmithf instanceof Student) {
+		 * System.out.println("drSmith instance of Student"); }
+		 */
+	}
+}
+\end{lstlisting}
+
+In this class, we're declaring three objects, \verb!bobp, teds!, and \verb!carolf! each of which have type \verb!Person!. The variable \verb!bobp! refers to a person, \verb!teds! refers to a \verb!Student!, and \verb!carolf! refers a \verb!Faculty! object. We also declare \verb!drSmithf! to be of type \verb!Faculty!, and \verb!drSmithf! also refers to a \verb!Faculty! object.
+
+
+Now, which of these \verb!if (...)! clauses will evaluate to ``true," and which will evaluate to false? 
+\begin{itemize}
+    \item The conditional \verb!bobp.getClass() == teds.getClass()! evaluates to false. Why? Because \verb!bobp! is a \verb!Person!, whereas \verb!teds! is a  \verb!Student!. Thus, the first print statement isn't printed.
+    \item The conditional \verb@bobp instanceof Person@ evaluates to true since \verb!bobp! is a Person.
+    \item The conditional \verb!teds instanceof Student! evaluates to true since \verb!teds! refers to a \verb!Student!.
+    \item \verb!teds instanceof Person! evaluates to true since \verb!teds! refers to a \verb!Student!, and a \verb!Student! extends the \verb!Person! class.
+    \item \verb!bobp instanceof Student! is false since \verb!bobp! has a \verb!Person! object, and \verb!Person! does not extend \verb!Student!.
+    \item \verb!carolf instanceof Person! evaluates to true since the \verb!Faculty! class extends \verb!Person! class. 
+    \item \verb!carolf instanceof Student! is false since \verb!Faculty! does not extend \verb!Student!.
+    \item \verb!drSmithf instanceof Student! is false since \verb!drSmithf! is a \verb!Faculty! object and also refers to a \verb!Faculty! type. In fact, a \verb!Faculty! object can never refer to a \verb!Student! object, so the Java compiler recognizes this and issues a compile-time error (the conditional can never be true).
+\end{itemize}

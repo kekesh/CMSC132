@@ -1,0 +1,11 @@
+\section{Wednesday, September 11, 2019}
+\subsection{Upcasting and Downcasting}
+When casting in the context of inheritance, there are two different types of casting: upcasting and downcasting. What are the differences?
+\begin{itemize}
+    \item \vocab{Upcasting} is when we cast a subtype to a supertype. For example, we could cast a \verb!Student! object to a \verb!Person! object in order to perform a task that operates on people.
+    \item \vocab{Downcasting} is just going in the other direction: casting a supertype to a subtype.
+\end{itemize}
+
+Upcasting is always allowed. There is no problem in treating a subclass object as its superclass type due to the ``is-a" relationship exhibited by the sub and superclasses. Upcasting can automatically be done by the compiler in some instances. For example, if we have a function that takes in a \verb!Person!, we could pass in a \verb!Student!, and the compiler would automatically cast the \verb!Student! as a \verb!Person!.
+
+On the other hand, downcasting isn't always allowed. 

@@ -80,6 +80,8 @@ Note that the \verb!Student! class implements the \verb!Comparable! interface (w
 
 An even simpler implementation of \verb!compareTo! that would do just what we want would be to only have the statement \verb!return id - other.id!.
 
+Finally, we have a \verb!hashCode! method, which will be discussed in-depth at a later time. But for now, it's important to know that, whenever the \verb!equals! method is overriden, we must provide a \verb!hashCode! method with the same header as shown in the code segment above. Java's enforcement of this ``policy" is known as a \vocab{hash code contract}. 
+
 
 \subsection{Annotations}
 In Java, \vocab{annotations} are used to help find runtime errors at compile time, and also provide additional information to others as to what you are trying to do. The general syntax for an annotation is \verb!@[annotation name]!. Some of the common ones used by the compiler are listed below:
@@ -94,13 +96,3 @@ What's an example in which annotations can help us?
 Suppose we're overriding a function. If we make a mistake and write the function header for the overridden wrong, our compiler won't interpret this as an error (assuming everything else is right). But, if we were to put the \verb!@Override! annotation before we override the function, our compiler will notice that we've got the wrong function header, and it will give us an error. 
 
 This is particularly helpful because it helps us identify otherwise latent bugs.
-
-\subsection{An Introduction to Inheritance}
-In Java, \vocab{inheritance} is a process by which one class---called the \vocab{derived class}---is created from another class---known as the \vocab{base class}.
-
-The derived class is also known as a \vocab{subclass}, and the base class is known as a \vocab{superclass}.
-
-
-Why do we use inheritance? Pretty much, inheritance allows us to reuse code that is common between two classes.
-
-

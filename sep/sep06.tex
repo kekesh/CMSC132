@@ -1,0 +1,263 @@
+\section{Friday, September 6, 2019}
+
+% Inheritance One. No lecture video posted for 2019; used video from 2017.
+\subsection{An Introduction to Inheritance}
+As mentioned briefly last class, \vocab{inheritance} is a technique that allows us to capitalize on some features that have already been implemented in a class. Ultimately, this allows us to reduce code duplication, and it also increases readability.
+
+
+Suppose, for the sake of example, that we have a class \verb!Shape!, and we want to implement several other related classes, like \verb!Square!, \verb!Rectangle!, and \verb!Circle!. Since squares, rectangles, and circles are all examples of shapes, this is a clear example in which we can use inheritance. In computer science terminology, we would say that the \verb!Square, Rectangle,! and \verb!Circle! classes are \vocab{subclasses} or the \verb!Shape! \vocab{superclass}. These subclasses \vocab{extend} their superclass. 
+
+In essence, by putting the variables and methods that are common to all shapes in the \verb!Shape! class, we can avoid having to re-add them in every class that extends the \verb!Shape! class (the subclasses can inherit what we want them to). We can subsequently define new instance variables and new methods that are specific to the shape we are implementing. For example, the subclasses might inherit a floating-point \verb!area! field from the \verb!Shape! class, but they must implement their \verb!getArea()! methods in different ways.
+
+
+
+The following classes, used to represent a University Database, clearly depict how some features of inheritance work. There are three classes that compose this program. 
+
+First, the \verb!Person! class:
+
+\begin{lstlisting}
+package university;
+
+public class Person {
+	private String name;
+	private int id;
+
+	public Person(String name, int id) {
+		this.name = name;
+		this.id = id;
+	}
+
+	public Person() {
+		this("Unknown", 0);
+	}
+
+	public Person(Person person) {
+		this(person.name, person.id);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String toString() {
+		return "[" + name + "] " + id;
+	}
+
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Person))
+			return false;
+		Person person = (Person) obj;
+
+		return name.equals(person.name);
+	}
+
+	public int hashCode() {
+		return id;
+	}
+
+	public static void main(String[] args) {
+		Person p1 = new Person("Paul", 10);
+		Person p2 = new Person("Mary", 20);
+		Person p3 = new Person(p2);
+
+		System.out.println(p1);
+		System.out.println("Same?: " + p1.equals(p2));
+		System.out.println("Same?: " + p2.equals(p3));
+	}
+}
+\end{lstlisting}
+
+
+The \verb!Person! class, shown above, is a very general class used to represent an individual person. There are some fields, like \verb!name! and \verb!id!, which characterize a person attending the university we are representing. Also, there are a few different ways in which we can instantiate a \verb!Person! object, as seen by the different constructors provided. Note that we have also override the \verb!equals! method, which simply compares the names of the people. As we've learned, we can prevent some compile-time errors by adding the \verb!@Override! annotation before this method. Finally, we have provided a \verb!hashCode! method in order to satisfy Java's hash code contract (as mentioned before, this will be discussed in-depth at a later time).
+
+
+Next, we have the \verb!Student! class:
+
+\begin{lstlisting}
+package university;
+
+public class Student extends Person {
+	private int admitYear;
+	private double gpa;
+
+	public Student(String name, int id, int admitYear, double gpa) {
+		super(name, id); /* calls super class constructor */
+		this.admitYear = admitYear;
+		this.gpa = gpa;
+	}
+
+	/* What would happen if we remove the Person default constructor? */
+	public Student() {
+		super(); /* calls base case constructor (what if we remove it?) */
+		admitYear = -1;
+		gpa = 0.0;
+	}
+
+	public Student(Student s) {
+		super(s); /* calls super class copy constructor */
+		admitYear = s.admitYear;
+		gpa = s.gpa;
+	}
+
+	public int getAdmitYear() {
+		return admitYear;
+	}
+
+	public double getGpa() {
+		return gpa;
+	}
+
+	public void setAdmitYear(int admitYear) {
+		this.admitYear = admitYear;
+	}
+
+	public void setGpa(double gpa) {
+		this.gpa = gpa;
+	}
+
+	public String toString() {
+		/* Using super to call super class method */
+		return super.toString() + " " + admitYear + " " + gpa;
+	}
+
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Student))
+			return false;
+		Student student = (Student) obj;
+
+		/* Relying on Person equals; passing student */
+		return super.equals(student) && admitYear == student.admitYear;
+	}
+
+	public static void main(String[] args) {
+		Student bob = new Student("Bob", 457, 2004, 4.0);
+		Student robert = new Student(bob);
+		Student tom = new Student("Tom", 457, 2004, 4.0);
+
+		System.out.println(bob);
+		System.out.println("Same:" + bob.equals(robert));
+		System.out.println("Same:" + tom.equals(robert));
+	}
+}
+\end{lstlisting}
+
+Firstly, we can observe that the \verb!Student! class extends the \verb!Person! class, meaning that it extends the public methods and fields that \verb!Student! has. 
+
+The \vocab{super} class, when used in a method, calls the method with the same method header in the superclass of the class \verb!super! is being called in. 
+
+Now that we've already implemented various constructors in the \verb!Person! class, it isn't necessary to re-implement them in the \verb!Student! class since we're using inheritance. In each of our \verb!Student! constructors, we just make a \verb!super()! call to access the corresponding constructor in the parent \verb!Person! class, which does what we want it to do.
+
+Furthermore, we see that, in the \verb!Student! constructor, we call \verb!super(name, id)!, which calls the superclass's constructor. Whenever we're making \verb!super()! call in a constructor, it is necessary for the \verb!super()! call to be the first statement in a constructor. 
+
+
+In the default \verb!Student()! constructor, which takes no parameters, it's fine to remove the \verb!super()! call. Java will automatically add it for you, and it will call the default constructor of the superclass. 
+
+
+It's also important to note how Java can recognize which constructor to use from the parent class. For example, just \verb!super()! will call the default constructor in the parent class, whereas \verb!super(s)! will call the copy constructor in the parent class. It is particularly interesting to note how the superclass takes a \verb!Person! object in its copy constructor, whereas the \verb!Student! subclass takes a \verb!Student! object. This is perfectly fine since every student ``is-a" person. 
+
+
+If we didn't want the \verb!Student! class to access some method of the \verb!Person! class, we could just make that method private.
+
+
+
+Finally, we have the \verb!Faculty! class:
+
+
+\begin{lstlisting}
+package university;
+
+public class Faculty extends Person {
+	private int hireYear; /* year when hired */
+
+	public Faculty(String name, int id, int hireYear) {
+		super(name, id);
+		this.hireYear = hireYear;
+	}
+
+	public Faculty() {
+		super();
+		hireYear = -1;
+	}
+
+	public Faculty(Faculty faculty) {
+		/* Why are we using get methods for the first two ? */
+		this(faculty.getName(), faculty.getId(), faculty.hireYear);
+	}
+
+	int getHireYear() {
+		return hireYear;
+	}
+
+	void setHireYear(int year) {
+		hireYear = year;
+	}
+
+	public String toString() {
+		return super.toString() + " " + hireYear;
+	}
+
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+
+		if (!(obj instanceof Faculty))
+			return false;
+
+		Faculty faculty = (Faculty) obj;
+
+		/* Relying on Person equals; passing student */
+		return super.equals(faculty) && hireYear == faculty.hireYear;
+	}
+
+	public static void main(String[] args) {
+		Faculty john = new Faculty("John", 20, 2004);
+		Faculty jack = new Faculty(john);
+		Faculty mary = new Faculty("Mary", 101, 2010);
+
+		System.out.println(mary);
+		System.out.println("Same:" + john.equals(jack));
+		System.out.println("Same:" + jack.equals(mary));
+
+		System.out.println("Id: " + john.getId());
+		System.out.println("HireYear: " + john.getHireYear());
+	}
+}
+\end{lstlisting}
+
+
+Similar to the \verb!Student! class, the \verb!Faculty! class extends the \verb!Person! class and uses its constructors with \verb!super()!. Also similar to the \verb!Student! class, the \verb!super()! call in the default \verb!Faculty()! constructor is optional (Java will automatically add one if you don't have it). 
+
+
+
+Here are a few key points that you should remember about inheritance:
+
+\begin{itemize}
+    \item The \verb!extends! keyword is used to specify that a class is a subclass of another class. For example, \verb!public class Student extends Person { .. }! indicates that \verb!Student! is a subclass of \verb!Person!.
+    \item The \verb!this! keyword is used to refer to the current class we're in. 
+    \item Subclasses inherit everything from their superclasses that isn't private.
+    \item Superclasses and subclasses illustrate an ``is-a" relationship --- as seen by the copy constructor example, we can use the subclass objects wherever Java is expecting a superclass object without error.
+    \item The \verb!super()! call can be invoked when initializing a subclass object in order to use the superclass constructor. 
+    \item A \verb!super()! call must be the first statement in your constructor. 
+    \item If you don't use a \verb!super()! call, Java will automatically invoke the base class's default constructor. What happens if the base class doesn't have a default constructor? We get a compile-time error.
+\end{itemize}
+
+A consequence of the ``is-a" relationship between the subclass and superclass is seen by the validity of various assignments. Going back to our university example, since a \verb!Student! is a \verb!Person!, if we declared a \verb!Student! object \verb!s! and a person object \verb!p!, it would be fine to do something like, \verb!p = s!. More specifically, it's fine to assign a person to a student since a student is a person. However, the other way around is not allowed.
+
+
+Also, if we don't like a method that the superclass provides to us, we can override it in order to get a new one. This is seen in the \verb!toString()! method in the university example.
