@@ -1,0 +1,152 @@
+\section{Monday, September 23, 2019}
+
+\subsection{Lambda Expressions}
+Suppose we have the following interface that provides us with the prototype of a \verb!compute! function:
+
+\begin{lstlisting}
+package lambda;
+
+public interface Task {
+	public int compute(int x);
+}
+\end{lstlisting}
+
+One way to use this interface would be to implement it, which would make the compiler force the class to provide a declaration of the function \verb!compute!. This is a great idea if we're planning to create many instances of the class, but what if we only plan to instantiate this class once? As we've learned, we can solve this problem with anonymous classes. An alternative way to solve this problem is with \vocab{lambda expressions}, which permit us to write anonymous functions in a simpler way.  This means that lambda expressions aren't  ``necessary" in the sense that there isn't something that can only be done with lambda expressions, but they can be very convenient to use.
+
+\noindent The general syntax for a lambda expression is \verb!(type1 parameter1, type2 parameter2, ...) -> expression! or \verb!(type1 parameter1, type2 parameter2, ...) -> {statements;}!. The first form is used when we're returning a value, and the second form is used otherwise. 
+
+The following code demonstrates how we can use lambda expressions in the context of our \verb!Task! interface.
+
+\begin{lstlisting}
+package lambda;
+
+public class LambdaBasics {
+	public static void main(String[] args) {
+		Task anonymousVersion = new Task() {
+			public int compute(int x) {
+				return x + x;
+			}
+		};
+		System.out.println(anonymousVersion.compute(10));
+
+		Task lambdav1 = (int x) -> {
+			return x + x;
+		};
+		System.out.println(lambdav1.compute(10));
+
+		Task lambdav2 = (x) -> x + x;
+		System.out.println(lambdav2.compute(10));
+
+		Task lambdav3 = x -> x + x;
+		System.out.println(lambdav3.compute(10));
+
+		AnotherTask lambdav4 = () -> 10;
+		System.out.println(lambdav4.analyze());
+
+		Processor lambdav5 = (int x, float y) -> x * y;
+		System.out.println(lambdav5.increase(10, 5));
+
+		pdata((x, y) -> x * y);
+	}
+
+	public static void pdata(Processor p) {
+		System.out.println(p.increase(10, 60));
+	}
+}
+\end{lstlisting}
+
+The above code firstly declares an anonymous inner class that implements the \verb!Task! interface. This is done by providing a declaration of the \verb!compute! function. Subsequently, we use a lambda expression to declare \verb!lambdav1! using the first ``general syntax" form that was specified earlier. Next, we declare a second lambda expression named \verb!lambdav2! using the second ``general syntax" form specified earlier. We can note that the key difference between these two declarations is that the first form contains a single expression after the arrowhead, while the second form can contain several statements after the arrowhead (if there's a single statement, like above, the compiler can infer that it needs to return it). Why isn't the \verb!int! type specified in the second declaration? It turns out that our compiler can infer the type to be an \verb!int! based on the context in which the lambda expression is used in.
+
+We can simplify \verb!lambdav2! even more. The lambda expression \verb!lambdav3! drops the parentheses around the parameter of \verb!lambdav2!; parentheses are not necessary when there is only a single parameter. 
+
+
+Now let's introduce another interface named \verb!AnotherTask!:
+
+\begin{lstlisting}
+package lambda;
+
+public interface AnotherTask {
+	public int analyze();
+}
+\end{lstlisting}
+
+This interface provides us with the prototype for an \verb!analyze()! function that returns an integer and doesn't take in any parameters. 
+
+As shown in the declaration of \verb!lambda4! in our driver code, we can declare a lambda expression for \verb!analyze! as well by using an empty open-closing parentheses pair, which indicates that there are no parameters. \\
+
+Finally, let's look at one last interface named \verb!Processor!:
+
+\begin{lstlisting}
+package lambda;
+
+public interface Processor {
+	public float increase(int x, float y);
+}
+\end{lstlisting}
+
+In our driver code, we've declared a lambda expression named \verb!lambdav5! that can be used for the \verb!increase! function. 
+
+Finally, in our driver, we show an application of lambda expressions. The \verb!pdata! function takes in a \verb!Processor! type, and it prints out the return value of the \verb!p.increase(10, 60)! call. Instead of creating an instance of a \verb!Processor! and subsequently passing that object into the function call, we can instead use a lambda expression (as done in the driver) in order to avoid writing so much code. This is also helpful since we don't need to declare one-time-use variables. 
+
+\subsection{Revisiting Shallow Copies}
+
+Recall the following \verb!Mouse! class that we used to discuss shallow copying:
+
+\begin{lstlisting}
+package cloning;
+
+public class Mouse implements Cloneable {
+	private String type;
+	private int xPos, yPos;
+
+	public Mouse(String type) {
+		this.type = type;
+		xPos = yPos = 0;
+	}
+
+	public void moveMouse(int xPos, int yPos) {
+		this.xPos = xPos;
+		this.yPos = yPos;
+	}
+
+	public String toString() {
+		return type + "-> xPos: " + xPos + ", yPos: " + yPos;
+	}
+
+	/* Notice the return type */
+	@Override
+	public Mouse clone() {
+		Mouse obj = null;
+
+		try {
+			obj = (Mouse) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return obj;
+	}
+}
+\end{lstlisting}
+
+When we create a \verb!Mouse! object, and we use the \verb!.clone()! method to create a copy of that mouse, a shallow copy is created. This means that primitive types are copied, while only the memory addresses of non-primitive types are copied. 
+
+In our \verb!Mouse! class, we call \verb!super.clone()! inside of our \verb!.clone()! method. This call returns an \verb!Object! type, but we cast it as a \verb!Mouse! and return a \verb!Mouse! type. Note that this still counts as function overriding (even though we're returning a \verb!Mouse! type instead of an \verb!Object! type) as this is a case of covariant return types. At this point, we're done creating our copy, and we can return this value. This returned value will be independent of the original object since the strings in the class are immutable, and the remaining variables are all primitives, so they are all copied.
+
+
+So when's an example in which the default \verb!.clone()! method is not enough to produce two independent copies (i.e. copies with the property that changing one does not affect the other)? One example in which \verb!.clone()! wouldn't be enough is if we have a new class named \verb!Computer! that has a \verb!Mouse! object as one of its instance variables. In this case, the \verb!.clone()! method will make both \verb!Computer! objects point to the \verb!Mouse! object. However, since the \verb!Mouse! object contains two primitive types (integers) that can be changed, changing an integer in the \verb!Mouse! object will be reflected as a change in both \verb!Computer! objects. 
+
+How do we fix this problem? We can override the \verb!.clone()! method in the \verb!Computer! class, check if a \verb!Mouse! object is present (not null). If it is present, we can call the \verb!.clone()! method on the mouse (which we've already explained does what we want). 
+
+\subsection{Garbage Collection}
+One of the benefits of using Java as a programming language is that we don't have to worry about freeing memory that we are no longer using in the program. More precisely, if we remove all references to an object, this object becomes \vocab{garbage} since it is useless and can no longer affects the program. This is not true in some other programming languages, like C.
+
+This entire process is automated for us in Java, and the process is called \vocab{garbage collection}. Essentially, we're able to reclaim memory used by unreferenced objects when we're running low on memory. This process is performed periodically by Java, but it is not guaranteed to occur. \\
+
+One way in which garbage collection is performed is through the use of \vocab{destructors}, which are void methods with the name \verb!finalize()! that contain the necessary actions to be performed when an object is freed. Destructors are only invoked if garbage collection occurs. Here's an example of what a destructor might look like:
+
+\begin{lstlisting}
+class Foo {
+    void finalize() { ... } // destructor for Foo
+}
+\end{lstlisting}

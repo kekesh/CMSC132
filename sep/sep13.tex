@@ -1,0 +1,134 @@
+\section{Friday, September 13, 2019}
+\subsection{Introduction to Exceptions}
+In Java, \vocab{exceptions} are used in the event that execution of a program that disrupts the normal, expected flow of code execution (typically, we say an exception is ``thrown"). For example, attempting to divide by zero or attempting to open a non-existent file would cause an exception. Internally, an exception is represented as an object, which has various values and built-in method. When an error occurs, an exception object is created, and this object is sent to a \vocab{catch clause}, which performs the necessary processing. The mapping of the exception to the catch clause is done internally by Java.
+
+
+What are the benefits of throwing exceptions?
+\begin{itemize}
+    \item Allows for debugging and error differentiation.
+    \item Typically, exception handling code is separate and easy to distinguish. 
+\end{itemize}
+
+The following code segment illustrates a basic exception-throwing example:
+
+\begin{lstlisting}
+package exceptionsEx;
+
+import javax.swing.JOptionPane;
+
+public class Fundamentals {
+	public static void evenOdd() {
+		String prompt = "Enter integer value";
+		
+		try {
+			int value = Integer.parseInt(JOptionPane.showInputDialog(prompt));
+			String message = "odd";
+			if (value % 2 == 0)
+				message = "even";
+			System.out.println(message);
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(null, "You must provide an integer value");
+		}
+	}
+
+	public static void main(String[] args) {
+		evenOdd();
+	}
+}
+\end{lstlisting}
+
+In this program, we simply call a function called \verb!evenOdd()!, which takes in a user-inputted integer, and determines whether it is even or odd. But what happens if the user \textit{doesn't} input an integer? Typically, our code would crash. But in this code segment, we foresee this error, and we put the ``dangerous" portion of the code (that is, the code segment that can lead to the program crashing) into a \verb!try { ... }! block. This is immediately followed by a \verb!catch ( .. ) { .. }! block, where the type of error that could occur is specified.
+
+Essentially, when we're in the \verb!try { ... }! block, our compiler will always be on the lookout for a \verb!NumberFormatException!. If this exception is ever thrown, our flow of execution will be interrupted, and nothing after the line that caused the exception to be thrown will be executed --- we will jump and execute the code in the \verb!catch( ... ) { ... }! block. The code will continue to execute after the \verb!catch ( ... ) { ... }! block afterwards (but in our code segment, there's nothing afterwards anyways).
+
+To summarize,
+\begin{itemize}
+    \item The code in the \verb!try { ... }! clause should be the code that can potentially throw an exception. If an exception is thrown, the flow of execution is interrupted (we jump to the catch block).
+    \item The code in the \verb!catch ( .. ) { ... }! clause specifies what exception to look out for (we can look out for more than one exception by having multiple catch clauses). The code inside of the \verb!catch ( ... ) { ... }! clause's code block will be executed if this type of exception thrown. 
+\end{itemize}
+
+
+A comprehensive list of exceptions can be found here: \url{https://docs.oracle.com/javase/7/docs/api/java/lang/Exception.html}.
+
+
+In the above example, we wait for exceptions to be thrown by the compiler, and we catch them in our code block. However, as the program writer, you are able to throw exceptions yourself with the general syntax \verb!throw new [exception]!. Why would we ever want to do this? For example, if you wanted to create an empty method called \verb!getIntValue()! that you planned to implement at another time, you could use the following code:
+
+\begin{lstlisting}
+public static int getIntValue() {
+    throw new UnsupportedOperationException("You must implement this method");
+}
+\end{lstlisting}
+
+This would allow you to continue implementing other portions of the code (without a compile-time error) without returning a value. 
+
+\subsection{The Finally Block}
+
+There is another component to exceptions that we haven't discussed yet: \vocab{finally blocks}. The finally block follows the \verb!try { ... } catch ( ... ) { ... }! blocks, and it contains code that is always executed (we can put code common to both the \verb!try { ... }! and \verb!catch ( ... ) { ... }! blocks inside of our \verb!finally { ... }! block).
+
+Here's an example:
+
+\begin{lstlisting}
+package exceptionsEx;
+
+import javax.swing.JOptionPane;
+
+public class ReadNegativeValue {
+	public static int totalAttempts = 0;
+	
+	public static int getNegativeInteger() {
+		String prompt = "Enter negative integer value";
+		String errorMessage = "You must provide a negative integer value";
+		
+		while (true) {
+			int value = 0;
+			try {
+				value = Integer.parseInt(JOptionPane.showInputDialog(prompt));
+				if (value < 0) {
+					return value;
+				}
+				JOptionPane.showMessageDialog(null, errorMessage);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, "In method catch clause: " + errorMessage);
+			} finally {
+				totalAttempts++;
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		String report = "Value Provided: " + getNegativeInteger();
+		
+		report += "\nTotal Attempts: " + ReadNegativeValue.totalAttempts;
+		JOptionPane.showMessageDialog(null, report);
+	}
+}
+\end{lstlisting}
+
+In this example, we keep on reading integers until a negative integer is entered. The static integer variable \verb!totalAttempts! is incremented whether an exception is thrown or not. Another example in which a \verb!finally! block could be used is when we're dealing with file I/O. We should close the file being processed in the \verb!finally! block, whether an exception was thrown or not.
+
+\subsection{Checked and Unchecked Exceptions}
+
+% Remember the biggest difference between checked and unchecked exceptions is that checked exceptions are forced by compiler and used to indicate exceptional conditions that are out of the control of the program (for example, I/O errors), 
+
+Exceptions can be divided into two distinct categories: \vocab{checked exceptions} and \vocab{unchecked exceptions}. What are the differences?
+\begin{itemize}
+    \item Checked exceptions are ``forced" by the compiler, and we should be able to continue executing our program if they are provided. As an example, suppose we try to open a file that doesn't exist. This is a checked exception, and we should be able to handle this exception (i.e. continue executing our program), if it comes up. 
+    \item Unchecked exceptions are not forced by the compiler; they are typically more serious exceptions, like \verb!NullPointerException! and \verb!IndexOutOfBoundsException!, and they don't need to be caught. Pretty much, these are errors caused by the programmer writing bad code.
+\end{itemize}
+
+We can create our own exceptions by extending the \verb!Exception! class. By default, this creates a checked exception. Here's an example that demonstrates this:
+
+\begin{lstlisting}
+package exceptionsEx;
+
+/* Checked exception */
+public class NotPayingAttentionException extends Exception {
+	private static final long serialVersionUID = 1L;
+
+	public NotPayingAttentionException(String message) {
+		super(message);
+	}
+}
+\end{lstlisting}
+
+Here, we have defined a \verb!NotPayingAttentionException!, which is a checked exception (as it extends the \verb!Exception! class). By default, the constructor provides us with the message that is displayed when this exception is thrown. How do we use this exception? The key thing to remember is that checked exceptions \textit{must} be thrown in a \verb!try! block. Why? Because Java recognizes that programs should be able to handle checked exceptions, and there should be some way to continue execution of the program (with the \verb!catch! block). The line \verb!throw new NotPayingAttentionException("Exception!");! itself would not compile. It needs to be placed inside of a \verb!try! block.

@@ -1,0 +1,239 @@
+\section{Monday, September, 16, 2019}
+\subsection{Nested Types}
+%unfinished
+Java permits us to place classes inside of other classes in order to indicate that the two classes are distinct but closely related. Consider the following code segment:
+
+\begin{lstlisting}
+public class MyOuterClass {
+    private int x;
+    private class MyInnerClass {
+        private int y;
+        void foo () { x = 1; }
+    }
+    void bar() {
+        MyInnerClass ic = new MyInnerClass();
+        ic.y = 2;
+    }
+}
+\end{lstlisting}
+This is valid code, and it compiles. \verb!MyInnerClass! is a class that's placed inside of \verb!MyOuterClass!, which indicates that the two classes are closely related. Once we've created an inner class, we can create instances of the inner class inside of the outer class as shown in the function \verb!void bar() { ... }!. This is done in the usual way --- with the \verb!new! keyword.
+
+Something that might seem strange, however, is the outer class's ability to access private members of the inner class. For example, as shown in the \verb!bar()! function, we're able to access the private field \verb!y! outside of the inner class. This would not be possible if \verb!MyInnerClass! were not an inner class. This allows the inner and outer classes to easily share and exchange data.
+
+
+Scoping can sometimes be confusing, so here is another example:
+
+\begin{lstlisting}
+public class MyOuter {
+    int x = 2;
+    private class MyInner {
+        int x = 6;
+        private void getX() { // Inner class method.
+        int x = 8;
+        System.out.println(x); // Prints 8
+        System.out.println(this.x); // Prints 6
+        System.out.println(MyOuter.this.x); // Prints 2
+        }
+    }
+}
+\end{lstlisting}
+
+Here, we have an outer class \verb!MyOuter! and an inner class \verb!MyInner! The inner class is able to access everything in the outer class, whether it is private or not. The first \verb!System.out.println(x)! statement accesses the declaration of \verb!x! as $8$ since that is the most recent declaration in its current scope. If we use the \verb!this! keyword, we can refer to properties of the current object and access the value $6$. In a similar manner, if we need to access the value of $x$ in the outer class, we can use the \verb!this! keyword on the outer class. 
+
+Why do we need inner classes? The following example illustrates why inner classes can be so useful. 
+
+Below, we will present a program that uses \verb!Player! and \verb!Team! objects. Firstly, here's an implementation of the \verb!Player! class:
+
+\begin{lstlisting}
+package teamV2;
+
+public class Player {
+	private String name;
+	private String address;
+
+	public Player(String name, String address) {
+		this.name = name;
+		this.address = address;
+	}
+
+	public String toString() {
+		return "Player [name=" + name + ", address=" + address + "]";
+	}
+}
+\end{lstlisting}
+
+There's not too much to this: there's a constructor that takes in a name and an address, and there's a \verb!toString()! method to print the relevant details about a player. 
+
+Now here's the \verb!Team! class:
+
+\begin{lstlisting}
+package teamV2;
+
+public class Team {
+	public Player[] list; /* bad: it should not be public */
+	public int size; /* bad: it should not be public */
+
+	public Team(int maxSize) {
+		list = new Player[maxSize];
+		size = 0;
+	}
+
+	public boolean add(Player player) {
+		if (size < list.length) {
+			list[size++] = player;
+			return true;
+		}
+		
+		return false;
+	}
+
+	public String toString() {
+		String answer = "";
+
+		for (int i = 0; i < size; i++) {
+			answer += list[i] + "\n";
+		}
+
+		return answer;
+	}
+}
+\end{lstlisting}
+
+This is a little bit longer than the \verb!Player! class. As we can see, each \verb!Team! is composed of an array of \verb!Player! objects. There's a constructor that initializes the \verb!Team! object with its maximum size, and there's an \verb!add()! method that adds a \verb!Player! object to the array in the \verb!Team! object. Finally, there is a \verb!toString()! method, which simply calls the \verb!toString()! method on each \verb!Player! object by using \verb!System.out.println()!. 
+
+Now here is a driver program that uses both of these classes:
+
+\begin{lstlisting}
+package teamV2;
+
+import java.util.Iterator;
+
+public class Driver {
+	public static void main(String[] args) {
+		int maxSize = 10;
+		Team team = new Team(maxSize);
+
+		team.add(new Player("John", "College Park"));
+		team.add(new Player("Rose", "Silver Spring"));
+		team.add(new Player("Linda", "Bethesda"));
+
+		Iterator<Player> it = new TeamIterator(team);
+		while (it.hasNext()) {
+			System.out.println(it.next());
+		}
+	}
+}
+\end{lstlisting}
+
+Here, we create a \verb!Team! object named \verb!team!, and we add three \verb!Player! objects to our team. Finally, we use our \verb!team!'s \verb!toString()! method to print the details about our team through a \verb!TeamIterator! object. Below is an implementation of the \verb!TeamIterator! class: 
+
+\begin{lstlisting}
+package teamV2;
+
+import java.util.Iterator;
+
+public class TeamIterator implements Iterator<Player> {
+	private Team team;
+	private int pos;
+
+	public TeamIterator(Team team) {
+		this.team = team;
+		pos = 0;
+	}
+
+	public boolean hasNext() {
+		return pos < team.size;
+	}
+
+	public Player next() {
+		return team.list[pos++];
+	}
+
+	public void remove() {
+		throw new UnsupportedOperationException("iterator remove not implemented");
+	}
+}
+\end{lstlisting}
+
+Here, we've implemented a \verb!TeamIterator! class, which implements the \verb!Iterator! interface. As enforced by the interface, we implement the \verb!hasNext()! and the \verb!next()! methods. The integer variable \verb!pos! represents where we are currently pointing to in the array. 
+
+
+While this program compiles and works fine, it is not the optimal implementation. Why? Firstly, the \verb!TeamIterator! class has to access the \verb!list! and \verb!size! variables from the \verb!Team! class, which prevents these variables from being private (they are currently declared as public). Secondly, the \verb!TeamIterator! class is different from the \verb!Team! class, while the two classes are actually strongly related to each other. One way to fix the first issue would be by making the variables private and adding public getter methods to retrieve these values, but this still leaves the \verb!Team! and \verb!TeamIterator! classes as if they are two completely distinct classes. \\
+
+With inner classes, we can resolve both of these issues. More specifically, we can place the \verb!TeamIterator! class inside of the \verb!Team! class as an inner class as follows:
+
+\begin{lstlisting}
+package teamV3;
+
+import java.util.Iterator;
+
+public class Team {
+	private Player[] list; /* good: now is private */
+	private int size; /* good: now is private */
+
+	public Team(int maxSize) {
+		list = new Player[maxSize];
+		size = 0;
+	}
+
+	public boolean add(Player player) {
+		if (size < list.length) {
+			list[size++] = player;
+			return true;
+		}
+
+		return false;
+	}
+
+	public String toString() {
+		String answer = "";
+
+		for (int i = 0; i < size; i++) {
+			answer += list[i] + "\n";
+		}
+
+		return answer;
+	}
+
+	/* We need this method to provide access to the Iterator object */
+	public Iterator<Player> iterator() {
+		return new TeamIterator();
+	}
+
+	public class TeamIterator implements Iterator<Player> {
+		private int pos = 0;
+
+		/* Notice that we no longer has to pass team */
+		/* as we can access team object data directly. */
+		/* Notice how the code has been simplified dramatically */
+
+		public boolean hasNext() {
+			return pos < size;
+		}
+
+		public Player next() {
+			return list[pos++];
+		}
+
+		public void remove() {
+			throw new UnsupportedOperationException("iterator remove not implemented");
+		}
+	}
+}
+\end{lstlisting}
+
+Now, we don't need to create additional getter methods to access the variables since inner classes have access to the variables in their outer classes. Also, our \verb!TeamIterator! is now \textit{part of} our \verb!Team! class, which clearly indicates that the two classes are strongly related to each other and makes our code more readable. If we wanted to be able to use the enhanced for-loop and write something like, \verb!for (Player p : team)!, we could implement the \verb!Iterable! interface. This interface requires us to provide a method called \verb!iterator()! which simply returns an Iterator object. The relevant portion of code is shown below:
+
+\begin{lstlisting}
+public class Team implements Iterable<Player> {
+    /* ..... Other methods not shown ..... */
+    
+    public Iterator<Player> iterator() {
+        return new TeamIterator();
+    }
+    /* ..... Inner class not shown ..... */
+}
+\end{lstlisting}
+%End.
+
+Side-note: It is possible for an inner class to extend its outer class. 

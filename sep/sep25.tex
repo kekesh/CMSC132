@@ -1,0 +1,295 @@
+\section{Wednesday, September 25, 2019}
+\subsection{Initialization Blocks}
+An \vocab{initialization block} is a grouping of code to be executed at a pre-defined time.  There are two primary types of initialization blocks:
+\begin{enumerate}
+    \item \vocab{Static initialization blocks} are run whenever a class is loaded.
+    \item \vocab{Non-static initialization blocks}, which are also known as \vocab{instance initialization blocks} are run whenever a constructor is called.
+\end{enumerate}
+
+
+When can static initialization blocks be helpful? Let's suppose we have a \verb!Person! class whose implementation is shown below:
+
+\begin{lstlisting}
+package staticBlock;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
+public class Person {
+	private String name;
+	private Date birthDate;
+	private static final Date MILLENIUM;
+	
+	static {
+		Calendar gmtCal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		gmtCal.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+		MILLENIUM = gmtCal.getTime();
+	}
+
+	public Person(String name, Date birthDate) {
+		this.name = name;
+		this.birthDate = birthDate;
+	}
+
+	@Override
+	public String toString() {
+		return "Person [name=" + name + ", birthDate=" + birthDate + "]";
+	}
+
+	public boolean bornBefore2000() { // FASTER!
+		return birthDate.before(MILLENIUM);
+	}
+}
+\end{lstlisting}
+
+In this class, we've got a \verb!bornBefore2000()! function that returns true if the \verb!Person! object's birthdate is set before $2000$. This is done using the a built-in Calendar package. We also have a static initialization block, which as described previously, is run whenever the class is loaded (note: a class is loaded only once --- when a reference is made to it). 
+
+What's happening in the static initialization block? Essentially, we're pre-computing the result that's returned in the \verb!bornBefore2000! function. While we could create an equivalent definition of this class by removing the static initialization block and placing its contents inside of the \verb!bornBefore2000! method, it is faster to just precompute the result whenever a person instance is created since their birthday won't change. Ultimately, this increases efficiency. 
+
+In summary, we can precompute various quantities of interest in a static initialization block. Since classes are only loaded once, we should only precompute quantities that don't tend to change (like our date example above). 
+
+Here's another illustrative example that clearly conveys how static initialization blocks work:
+
+\begin{lstlisting}
+package staticBlock;
+
+/**
+ * Initializations executed in order of number
+ *
+ */
+public class VariableInitialization {
+	static {
+		A = 1;
+	}
+	static int A = 2;
+	static {
+		A = 3;
+	}
+	{
+		B = 4;
+	}
+	private int B = 5;
+	{
+		B = 6;
+	}
+
+	VariableInitialization() {
+		System.out.println("A: " + A);
+		System.out.println("B: " + B);
+	}
+
+	public static void main(String[] args) {
+		new VariableInitialization();
+	}
+}
+\end{lstlisting}
+
+While we probably wouldn't need so many static initialization blocks in practice, this example is simply present to illustrate how static initialization blocks work. The number that the variable is initialized to represents the order of execution when the program is run. Note that even though the statement \verb!A = 1! can occur prior to the declaration of \verb!A! as an integer. This is valid syntax as long as the initialization occurs in a code block.
+
+
+Next, we can look at the following example, which uses non-static initialization blocks:
+
+\begin{lstlisting}
+package nonStaticBlock;
+
+public class Employee {
+	private String name;
+	private int age;
+	private double salary = 100;
+
+	public Employee(String name, int age) {
+		this.name = name;
+		this.age = age;
+	}
+
+	public Employee() {
+		this.name = "NONAME";
+		this.age = 0;
+	}
+
+	{
+		System.out.println("salaryInit1: " + salary);
+		salary = 200;
+		System.out.println("end processing1");
+	}
+
+	@Override
+	public String toString() {
+		return "Employee [name=" + name + ", age=" + age + ", salary=" + salary + "]";
+	}
+
+	{
+		System.out.println("salaryInit2: " + salary);
+		salary = 400;
+		System.out.println("end processing2");
+	}
+
+	public static void main(String[] args) {
+		Employee employee1 = new Employee("John", 40);
+		System.out.println(employee1);
+
+		Employee employee2 = new Employee("Peter", 17);
+		System.out.println(employee2);
+
+		System.out.println(new Employee());
+	}
+}
+\end{lstlisting}
+
+Here, we have an initialization block that prints out the \verb!salary! variable, sets \verb!salary! to $400$, and prints ``end processing2." This initialization block is executed everytime an \verb!Employee! object is instantiated. Why would we put code in an initialization block instead of just putting it directly in the constructor? It's mostly a matter of style; sometimes it can be messy to have too much code in the constructor.
+
+\subsection{Generic Classes}
+The \verb!ArrayList! class permits us to specify what type of object we want to store inside of the list. We can create an \verb!ArrayList! of \verb!String! objects by writing, \verb!ArrayList<String> = new ArrayList<String>()!, and we can similarly create an \verb!ArrayList! of \verb!Integer! objects with \verb!ArrayList<Integer> = new ArrayList<Integer>()!. How does the \verb!ArrayList! class adapt to the different types of objects we want to store? This is done very easily through the use of generics.
+
+A \vocab{generic class} is a class that permits us to use one or more type variables. The benefit of using generic classes is clear --- we can avoid rewriting duplicate code for very similar tasks. Essentially, we're able to reuse the same code for different data types.
+
+In order to define a generic class, we just need to append the generic type variable(s) to the class name using angled brackets. The general syntax is \verb!ClassName <type variable>! (note how this looks really similar to the \verb!ArrayList! syntax that we're used to). The \verb!type variable! that is placed in-between the angled brackets can be any letter, but it's customary to use a single uppercase letter, like \verb!E!, \verb!K!, \verb!T!, or \verb!V!. 
+
+Once we've defined the generic variable in our class name, we are free to use it anywhere in the class. Here's an example of an implementation of a Queue data structure that uses generics:
+
+\begin{lstlisting}
+package queueExample;
+
+import java.util.NoSuchElementException;
+
+public class Queue<T> {
+	private T data[] = (T[]) new Object[4];
+	private int front = 0, rear = data.length - 1, size = 0;
+
+	public int size() {
+		return size;
+	}
+
+	public boolean empty() {
+		return size() == 0;
+	}
+
+	public int length() {
+		return data.length;
+	}
+
+	public int front() {
+		return front;
+	}
+
+	public int rear() {
+		return rear;
+	}
+
+	public T dataAt(int index) {
+		return data[index];
+	}
+
+	public boolean full() {
+		return size() == data.length;
+	}
+
+	public T remove() {
+		if (empty())
+			throw new NoSuchElementException("Queue is empty");
+		T result = data[front];
+		data[front] = null;
+		front++;
+		size--;
+		if (front == data.length)
+			front = 0;
+
+		return result;
+	}
+
+	public void add(T t) {
+		if (full()) {
+			resize();
+		}
+		size++;
+		rear++;
+		if (rear == data.length)
+			rear = 0;
+
+		data[rear] = t;
+	}
+
+	private void resize() {
+		T newData[] = (T[]) new Object[data.length * 2];
+		
+		for (int i = 0; i < size; i++)
+			newData[i] = data[(i + front) % data.length];
+		front = 0;
+		rear = size - 1;
+		data = newData;
+	}
+}
+\end{lstlisting}
+
+This example clearly illustrates the usefulness of generic programming. Previously, we would have been able to create a \verb!Queue! class that permits us to store a pre-defined data type, like integers, by creating an array of that type inside of the class. But now, by specifying the class uses a generic type, we're able to create a generic class that works for any non-primitive object. 
+
+What are some key things to note from the above implementation?
+\begin{itemize}
+    \item We must specify the generic type that we're using when we're opening the class. This is done by ``capturing" the generic variable \verb!T! in angled brackets by writing \verb!public class Queue<T>!. 
+    \item As shown through the \verb!dataAt()! method, it perfectly fine to return a generic type from a function.
+    \item As shown in the \verb!remove()! and \verb!resize()! functions, it is valid to create other variables with the generic type. 
+\end{itemize}
+
+To summarize, without generic programming, we would need to have an implementation for each data type that we wanted to have a \verb!Queue! object for. But with generic programming, we're able to put everything that's common to these implementations in a single class, ultimately reducing the amount of code that we must write.
+
+\subsection{Introduction to Linked Lists}  
+A \vocab{Linked List} is a linear data structure that is composed of several \vocab{nodes}, each of which contain some data and a reference to the next node in the list. For example, the following figure illustrates a Linked List consisting of three integers: $12$, $99$, and $37$. 
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=2,
+    draw, rectangle split horizontal}, >=stealth, start chain]
+
+  \node[list,on chain] (A) {12};
+  \node[list,on chain] (B) {99};
+  \node[list,on chain] (C) {37};
+  \node[on chain,draw,inner sep=6pt] (D) {};
+  \draw (D.north east) -- (D.south west);
+  \draw (D.north west) -- (D.south east);
+  \draw[*->] let \p1 = (A.two), \p2 = (A.center) in (\x1,\y2) -- (B);
+  \draw[*->] let \p1 = (B.two), \p2 = (B.center) in (\x1,\y2) -- (C);
+  \draw[*->] let \p1 = (C.two), \p2 = (C.center) in (\x1,\y2) -- (D);
+\end{tikzpicture}
+\caption{A Linked List}
+\end{figure}
+
+The entire figure above represents a Linked List, and each individual square represents a square. Visually, we represent the end of a Linked List by a null reference (above, this is represented with a crossed out square).  
+
+As shown in the above figure, it's important to remember that each node consists of two entities: the data stored in that node as well as a reference to the next node. 
+
+In Java, we can implement a Linked List using an inner class to represent the node. Part of an implementation is shown below:
+
+\begin{lstlisting}
+package myLinkedList;
+
+public class MyLinkedList<T extends Comparable<T>> { /* Notice the parameter */
+	private class Node {
+		private T data;
+		private Node next;
+
+		private Node(T data) {
+			this.data = data;
+			next = null; /* do we really need to do this? */
+		}
+	}
+
+	/* List head pointer */
+	private Node head;
+
+	/* We don't actually need it */
+	public MyLinkedList() {
+		head = null;
+	}
+
+	/* Adding at the front of the list */
+	public MyLinkedList<T> add(T data) {
+		Node newNode = new Node(data);
+		newNode.next = head;
+		head = newNode;
+
+		return this;
+	}
+\end{lstlisting}
+
+As described earlier, each \verb!Node! object has a generic \verb!data! field to store some information as well as \verb!next! field, which stores the next \verb!Node! object in the Linked List. This may seem confusing at first since the definition of a \verb!Node! object includes a \verb!Node! field inside of it. This self-reference is permitted by Java. 

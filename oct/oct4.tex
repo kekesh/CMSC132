@@ -1,0 +1,62 @@
+\section{Friday, October 4, 2019}
+\subsection{Linked List Methods}
+Recall that last lecture, we started talking about the Linked List data structure. It is important to note that the head of a Linked List data structure isn't actually a node but rather just a reference to the first node in the Linked List. This means that an empty Linked List can  be represented with a null head node. In memory, nodes are typically stored in the heap (they are dynamically allocated). 
+
+How do we print a Linked List?
+
+Here is the relevant code to do so:
+
+\begin{lstlisting}
+/* Prints a Linked List */
+public String toString() {
+    String result = "\" ";
+    Node curr = head;
+    while (curr != null) {
+        result += curr.data + " ";
+        curr = curr.next;
+    }
+    return result + "\"";
+}
+\end{lstlisting}
+
+Essentially, we traverse the Linked List with a node called \verb!curr!. We start traversing from the first node in the Linked List by setting \verb!curr! equal to \verb!head!. Subsequently we add the data of each node into our buffer that we will be printing, and we use the reference present in the current node to access the next node. This process is repeated up until we hit \verb!null!, which indicates the end of a Linked List data structure.
+
+Next, let's look at an \verb!add()! function which appends a value to the front of our Linked List:
+
+\begin{lstlisting}
+public MyLinkedList<T> add(T data) {
+    Node newNode = new Node(data);
+    newNode.next = head;
+    head = newNode;
+    return this;
+}
+\end{lstlisting}
+
+This function be a little bit tricky to understand. The function takes in some \verb!data! of type \verb!T! (it's a generic type!), and it passses this data into the \verb!Node! constructor. The \verb!newNode! object is created with the \verb!data! parameter that is passed in, and the \verb!next! field of the newly created \verb!newNode! object is set to null. We set the \verb!next! field equal to the head of the Linked List (so that the new node is pointing to the front of the Linked List), and we subsequently move the \verb!head! to point to the \verb!newNode!, which ultimately makes the \verb!newNode! the front of the Linked List. 
+
+In order to trace what various Linked List functions are doing, it is sometimes helpful to draw Linked List diagrams and modify the edges as they are modified in the function. 
+
+As we've seen so far, many Linked List methods must iterate through the entire list. Linked List traversals can be categorized into two noteworthy categories\footnote{These two categories are not standard names.}:
+
+\begin{itemize}
+    \item The ``\vocab{print traversal}" is used when we need to visit every node in the Linked List, and perform some sort of processing on the node. This sort of traversal should be used when we don't need to access previous nodes to complete our task (for instance, if we're printing our list). The general setup for the print traversal is shown below:
+    \begin{lstlisting}
+    Node curr = head;
+    while (curr != null) {
+        /* Perform some processing. */
+        curr = curr.next;
+    }
+    \end{lstlisting}
+    \item The ``\vocab{Tom and Jerry Traversal}" works by keeping two adjacent references to nodes. The left-most reference allows us to look back and access previous elements, and the right-most reference allows us to perform forward processing. These two pointers move in parallel. This type of traversal is particularly useful when we need a backreference, like when we're reversing a Linked List or adding a node either before or after some element. The general setup for the Tom and Jerry traversal is presented below:
+    \begin{lstlisting}
+    Node prev = null;
+    Node curr = head;
+    while (curr != null) {
+        /* Processing. */
+        prev = curr;
+        curr = curr.next;
+    }
+    \end{lstlisting}
+\end{itemize}
+
+One can see that the \verb!toString()! method presented earlier uses the print traversal. However, the print traversal isn't enough to do everything that we want. For example, suppose we want to remove all nodes whose data is $10$ in a given Linked List. This cannot be done with a simple print traversal since once we've found a node whose data entry is equal to $10$, we wouldn't be able to go backwards and set the \verb!next! field of the node that comes before the node with $10$ as its data to the node after the node with $10$ as its data. This problem can, however, be solved with the Tom and Jerry Traversal since we'll have always have a reference to the previous node.

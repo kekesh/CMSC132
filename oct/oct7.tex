@@ -1,0 +1,106 @@
+\section{Monday, October 7, 2019}
+Recall last time we introduced two types of Linked List traversals: The Print Traversal, and the Tom and Jerry Traversal. The first type of traversal consists of a single node that moves across the entire Linked List, and the second type of traversal consists of two nodes that move across the Linked List. These two types of traversals allow us to solve most of the problems we will encounter in this course. 
+
+In case it is not clear, the Tom and Jerry Traversal is given its name since we can view our reference to the left-most traversal node (often referred to as the ``previous" node) as if it is ``chasing" the right-most traversal node (often referred to as the ``current" node). 
+
+
+
+\subsection{Linked List Methods}
+Below is an implementation of a Linked List's \verb!delete()! method, which takes in a generic \verb!targetElement! variable and deletes the first node whose \verb!data! entry is equal to \verb!targetElement!.  This is done using a Tom and Jerry Traversal through the Linked List. Once we've found a node whose data matches \verb!targetElement!, we can use our reference to the previous node and set the \verb!next! field of the previous node equal to the node after the node that the current node is pointing to. 
+
+\begin{lstlisting}
+	public void delete(T targetElement) {
+		Node prev = null, curr = head;
+
+		while (curr != null) {
+			if (curr.data.compareTo(targetElement) == 0) {
+				if (curr == head) {
+					head = head.next;
+				} else {
+					prev.next = curr.next;
+				}
+				return;
+			} else {
+				prev = curr;
+				curr = curr.next;
+			}
+		}
+	}
+\end{lstlisting}
+
+We can trace this code with the following Linked List:
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=2,
+    draw, rectangle split horizontal}, >=stealth, start chain]
+
+  \node[list,on chain] (A) {123};
+  \node[list,on chain] (B) {456};
+  \node[list,on chain] (C) {789};
+  \node[on chain,draw,inner sep=6pt] (D) {};
+  \draw (D.north east) -- (D.south west);
+  \draw (D.north west) -- (D.south east);
+  \draw[*->] let \p1 = (A.two), \p2 = (A.center) in (\x1,\y2) -- (B);
+  \draw[*->] let \p1 = (B.two), \p2 = (B.center) in (\x1,\y2) -- (C);
+  \draw[*->] let \p1 = (C.two), \p2 = (C.center) in (\x1,\y2) -- (D);
+\end{tikzpicture}
+\caption{Linked List Pre-Deletion}
+\end{figure}
+
+Suppose we want to delete $456$ from our Linked List.
+\begin{itemize}
+    \item Before we enter the \verb!while! loop, \verb!curr! will point to the first node (i.e. the node with data $12$), and \verb!prev! will point to \verb!null! (it will not be pointing to any node). 
+    \item Next, we'll enter the \verb!while! loop since \verb!curr! does not equal null. The comparison of \verb!curr!'s data field with \verb!targetElement! will show that the two quantities are not equal, and we will subsequently move to the next iteration of the \verb!while! loop.
+    \item In the second iteration of the while loop, \verb!prev! will point to the first node (i.e. the node with data $123$), and \verb!curr! will point to the second node (i.e. the node with data $456$). At this point, the comparison of \verb!curr!'s data filed with \verb!targetElement! will show that the two quantities are equal, so we will enter the \verb!if! clause. In there, we'll set the \verb!next! field of the first node equal to the third node, which ultimately results in the following Linked List: 
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=2,
+    draw, rectangle split horizontal}, >=stealth, start chain]
+
+  \node[list,on chain] (A) {123};
+  \node[list,on chain] (C) {789};
+  \node[on chain,draw,inner sep=6pt] (D) {};
+  \draw (D.north east) -- (D.south west);
+  \draw (D.north west) -- (D.south east);
+  \draw[*->] let \p1 = (A.two), \p2 = (A.center) in (\x1,\y2) -- (B);
+  \draw[*->] let \p1 = (C.two), \p2 = (C.center) in (\x1,\y2) -- (D);
+\end{tikzpicture}
+\caption{Linked List Post-Deletion}
+\end{figure}
+
+Next, we can look at a \verb!getListWithDataInBetween! function, which takes in a lower and upper bound, and it returns a Linked List with only nodes whose \verb!data! fields are between these bounds:
+
+\begin{lstlisting}
+    	public MyLinkedList<T> getListWithDataInBetween(T start, T end) {
+		MyLinkedList<T> newList = new MyLinkedList<T>();
+
+		if (head != null) {
+			Node curr = head, last = null;
+
+			while (curr != null) {
+				if (curr.data.compareTo(start) >= 0 && curr.data.compareTo(end) <= 0) {
+					Node newNode = new Node(curr.data);
+					if (newList.head == null) {
+						newList.head = newNode;
+					} else {
+						last.next = newNode;
+					}
+					last = newNode;
+				}
+				curr = curr.next;
+			}
+		}
+
+		return newList;
+	}
+\end{lstlisting}
+
+Once again, this method uses the Tom and Jerry Traversal. This method is fairly similar to the \verb!delete! method. We keep on comparing nodes until we find one that lies between our two bounds. Once such a node is found, we create a new node with the data of the current node we're at, and this node is subsequently set equal to the \verb!head! field of our newly created Linked List. 
+
+Note that there is a special case for when we're adding the first node into our Linked List (in this case, we should make the newly created node our head). 
+
+\subsection{Doubly Linked Lists} 
+
+\section{Wednesday, October 10, 2019}

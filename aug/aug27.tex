@@ -1,161 +1,139 @@
-\section{Wednesday, August 30, 2019}
-\subsection{Collections}
+\section{Monday, August 27, 2019}
+This class is CMSC132: Object Oriented Programming II. We will be covering modern software development techniques, various algorithms and data structures, and more. This course is taught in Java $11$, but the techniques taught in this course carry over to several other programming languages.
+\subsection{Logistics}
+\begin{itemize}
+    \item All lectures are recorded and posted on Panopto.
+    \item No collaboration on projects.
+    \item No pop quizzes.
+    \item We will be using the Eclipse IDE.
+    \item Projects, office hours, lecture videos, and most other resources can be accessed from the class webpage: \url{https://www.cs.umd.edu/class/fall2019/cmsc132/}.
+    \item Projects are due at 11:30 p.m. on the specified day. They can, however, be submitted up to $24$ hours late with a $12\%$ penalty.  
+    \item The grade breakdown is $26\%$ for Projects, $16\%$ for Quizzes, Exercises, and Lab Work, $8\%$ for Midterm $1$, $11\%$ for Midterm $2$, $11\%$ for Midterm $3$, and $28\%$ for the Final Exam. 
+\end{itemize} 
 
-The \vocab{Java Collections Framework} is a set of methods and classes that provide support for \vocab{collections}, which are objects that group multiple elements into one unit. There is a collection interface that defines a set of methods that certain classes must have. It turns out that ArrayList is in the collections framework, and it implements the set of required methods (such as \verb!.add(), .clear(), .contains()!, and more).
+\subsection{Abstraction and Encapsulation}
+There are important two techniques used in Object-Oriented Programming that we need to become familiar with: abstraction and encapsulation. 
 
-Consider the following code segment:
+\vocab{Abstraction} is a technique in which we provide a very high-level model of activity or data. Small details about the model's functionality are not specified to the user. A good example . Abstraction can further be divided into two sub-categories, which are described below:
+\begin{enumerate}
+    \item \vocab{Procedural abstraction} is a type of abstraction in which the user is aware of what actions are being performed, but they are not told how the action is performed. For example, suppose we would like to sort a list of numbers. There are many algorithms that can do this for us. Under procedural abstraction, we would know that our end result is a sorted list of numbers, but we wouldn't know which algorithm is being used.
+    \item \vocab{Data abstraction} is a type of abstraction in which various data objects are known to the user, but how they are represented or implemented is not known to the user. An example of data abstraction is shown by representing a list of people. While the user would know that they have a list of people, they wouldn't know how the list is being represented (for example, we could use an array, an ArrayList, or any other data structure).
+\end{enumerate}
 
-\begin{lstlisting}
-package miscellaneous;
+An \vocab{abstract data type} (ADT) is an entity that has values and operations. More formally, an abstract data type is an implementation of interfaces (a set of methods). 
+Note that it is ``abstract" because it does not provide any details surrounding how these various operations are implemented. \\
 
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.LinkedList;
+An example of an abstract data type is a queue, which supports the operation of inserting items to the end of the queue as well as the operation of retrieving items from the front of the queue. Note, again, that we are not concerned with how these operations should be performed internally. \\
 
-public class CollectionExample {
-
-	public static Collection<Integer> defineElements(boolean arrayFlag, int numberOfValues, int maxValue) {
-		Collection<Integer> elements;
-
-		if (arrayFlag) {
-			elements = new ArrayList<Integer>();
-		} else {
-			elements = new LinkedList<Integer>();
-		}
-
-		for (int j = 0; j < numberOfValues; j++) {
-			elements.add((int) (Math.random() * maxValue + 1));
-		}
-
-		return elements;
-	}
-
-	public static void displayValues(Collection<Integer> data) {
-		if (data.isEmpty()) {
-			System.out.println("Empty Collection");
-		} else {
-			for (Integer value : data)
-				System.out.print(value + " ");
-		}
-	}
-
-	public static void main(String[] args) {
-		Collection<Integer> firstCollection = defineElements(true, 5, 10);
-
-		System.out.println("First Collection:");
-		displayValues(firstCollection);
-
-		System.out.println("\nSecond Collection:");
-		Collection<Integer> secondCollection = defineElements(false, 5, 10);
-		displayValues(secondCollection);
-
-		/* Example of methods defined by the Collection interface */
-		Collection<Integer> union = new ArrayList<Integer>();
-
-		/* Combining elements */
-		union.addAll(firstCollection);
-		union.addAll(secondCollection);
-		System.out.println("\nUnion");
-		displayValues(union);
-
-		/* Checking if elements from one collection are present in antoher */
-		if (union.containsAll(firstCollection))
-			System.out.println("\nIncludes all elements of first collection");
-
-		/* Removing elements in union present in second collection */
-		union.removeAll(secondCollection);
-		System.out.println("After removing");
-		displayValues(union);
-
-		/* Clearing the collection */
-		union.clear();
-		System.out.println();
-		displayValues(union);
-	}
-}
-\end{lstlisting}
-
-This code segment is another demonstration of how we can utilize the fact that some objects are instances of other types. The \verb!defineElements! takes in various parameters and returns either a LinkedList (another type list provided in the Collections Framework) or an ArrayList depending on the parameters provided. The reason why this is allowed is because of the ``is-a" relationship between ArrayLists, LinkedLists, and Collections. More specifically, both ArrayLists and LinkedLists are collections. Consequently, since the return type of this function is a Collection, we are allowed to return any object that is an instance of Collection. 
-
-On the other hand, the \verb!displayValues! method takes in a Collection type, and we're allowed to pass in any object that is an instance of Collection, as seen in the driver. 
+Finally, \vocab{encapsulation} is a design technique that calls for hiding implementation details while providing an interface (a set of methods) for data access. A familiar example of encapsulation is shown through the ArrayList in Java. The ArrayList provides various methods that are accessible to us, such as the \verb!.add()! and \verb!.at()! methods. We aren't concerned with how they are implemented internally.
 
 
-%Yesterday, we saw an \verb!Animal! interface, and we analyzed the \verb!Dog! and \verb!Piranha! classes which implemented this interface. Continuing with this example, the following code segment illustrates how we can 
-Collections are also really useful because they have built-in functions like \verb!.shuffle()! (which scrambles the collection) and \verb!.sort()!, which sorts the function. 
+\subsection{The Java Programming Language}
+Different programming languages provide varying levels of support for object-oriented programming. In particular, Java and C++ allow us to easily perform object-oriented programming. How does Java does this?
+\begin{itemize}
+    \item Java provides us with \vocab{interfaces}, which allows us to specify a set of methods that another class must implement. This allows us to easily express an abstract data type since we can specify the operations and data that an entity must have. Interfaces follow an ``is-a" relationship, meaning that a class that implements an interface is what the interface specifies. As an example, consider an animal interface. If an elephant implements the animal interface, we can perform tasks that are meant for animals with elephants (such as passing an elephant into a function that accepts animals). 
+    \item Java provides us with \vocab{classes}, which can be used as blueprints for other classes. Classes can extend other classes, which makes them \vocab{subclasses}. These subclasses inherit functions from the original class, and this also defines an ``is-a" relationship. 
+\end{itemize}
 
-\subsection{Generics}
+Here are some key points that we should remember about interfaces:
+\begin{itemize}
+    \item An interface cannot be instantiated. So, if we have an interface called \verb!animal!, typing \verb!Animal a = new Animal()! \textbf{would not compile}.
+    \item An interface can contain many public members, including static final constants, abstract methods (which have no body), default methods (with a body), static methods, and static nested types.
+\end{itemize}
 
-We typically write, \verb!ArrayList<Integer> = new ArrayList<Integer>()!, when we're instantiating an ArrayList of integers. Likewise, we could write, \verb!ArrayList<Bananas> = new ArrayList<Bananas>()! if we had created a class called \verb!Bananas!, or \verb!ArrayList<String> = new ArrayList<String>()! if we wanted an ArrayList of strings. This is example of \vocab{generics}: we are allowed to pass in whatever type we want our ArrayList to store. 
-
-
-Why are generics useful? Firstly, generics help us reduce the amount of code we need to write. Instead of writing lots of code that gets executed depending on whether the user is using an integer or a string, we can use generics in order to reduce the amount of code needed. The \verb!.add()!, \verb!.remove()! and other methods used by ArrayList are valid no matter what type we are storing in our ArrayList. If we didn't have generics, we'd need to have.
-
-Secondly, generics help us move some casting errors from runtime to compile time. Consider the following code segment:
+Let's look at an example of an interface:
 
 \begin{lstlisting}
-class A { ... }
-class B { ... }
-List myL = new ArrayList(); // raw type
-myL.add(new A()); // Add an object of type A
-...
-B b = (B) myL.get(0);
-\end{lstlisting}
+    import java.util.*;
 
-Here, we've declared two classes, and we've created a List called \verb!myL!. In this example, we have not used any generics (this is called a \vocab{raw type}) since we haven't specified the type that this list will store. Thus, Java will permit us to add whatever we want to this list. This can lead to issues if we don't remember what type is stored at each index (in the above example, for instance, retrieved the first element by casting it as \verb!B! when it is actually of type \verb!A!.). This issue won't be seen until runtime. Using generics, however, would move this error to compile time.
-
-Here is the same code segment but with generics:
-
-\begin{lstlisting}
-class A { ... }
-class B { ... }
-List<A> myL = new ArrayList<A>();
-myL.add(new A());
-A a = myL.get(0);
-...
-B b = (B) myL.get(0); // Compile-time error
-\end{lstlisting}
-
-Now that we've used generics, we'll find the casting error during compile time.
-
-So far, we've only seen how collections use generics. How do we use our own generics? We can parametrize classes, interfaces, and methods using \verb!<X>! notation. For example, we could write, \verb!public class foo<X, Y, Z> {  ... }!, to define a class called \verb!foo! that takes in three types. 
-
-
-\subsection{The Iterable Interface}
-The \vocab{Iterable Interface} defines a method called \verb!Iterator!, which returns an iterator that allows us to traverse a container (particularly lists). ArrayLists in Java implement the iterable interface. 
-
-The following example demonstrates how we can use iterators:
-
-\begin{lstlisting}
-public static void main(String[] args) {
-    ArrayList<String> myList = new ArrayList<String>();
-    myList.add("a");
-    myList.add("b");
-    
-    Iterator<String> it = myList.iterator();
-
-    while (it.hasNext()) {
-        System.out.println(it.next());
+    public interface Animal {
+        
+        public void feed(String food);
+        public int getAge();
+        public boolean manBestFriend();
+        
+        default void grow() {
+            System.out.println("I grow");
+        }
     }
-}
 \end{lstlisting}
 
-This code segment will print out everything in our list \verb!myList!. 
+Here, we've created an interface named \verb!Animal!, which other classes can implement. Any class that implements this class will need to also implement the functions \verb!feed!, \verb!getAge()! and \verb!manBestFriend()! with the same return values and parameters specified. The \verb!grow()! function will be associated with any class that implements this interface.
 
-However, it turns out that we don't actually need to handle iterators ourselves. We can use the \vocab{enhanced for loop} (also known as a \vocab{for each loo}), which does this for us. These types of for loops handle the iterator automatically. 
-
-Here's how we can use an enhanced for loop with our previous example:
-
+Now let's look at another class that implements the \verb!Animal! interface:
 
 \begin{lstlisting}
-public static void main(String[] args) {
-    ArrayList<String> myList = new ArrayList<String>();
-    myList.add("a");
-    myList.add("b");
-    
-    for (String s : myList) {
-        System.out.println(s);
-    }
+package animalExample;
+
+public class Dog implements Animal {
+	private String name;
+	private int age;
+
+	public Dog(String name, int age) {
+		this.name = name;
+		this.age = age;
+
+	}
+
+	public void feed(String food) {
+		System.out.println("Feeding " + name + " with " + food);
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public boolean manBestFriend() {
+		return true;
+	}
+
+	public void bark() {
+		System.out.println(name + " is barking");
+	}
 }
 \end{lstlisting}
 
-The for loop in this code segment can be read as, ``for each string \verb!s! in \verb!myList!, print \verb!s!.''
+Here are the key things that we should note:
+\begin{itemize}
+    \item The \verb!Dog! class implements the \verb!Animal! class. Thus, it is \textbf{required} to implement all of the methods specified by \verb!Animal! (if we were to comment out even one function, the code wouldn't compile).
+    \item The \verb!Dog! class is allowed to add its own methods, like \verb!bark()!. Likewise, the \verb!Dog! class is allowed to create its own variables, like \verb!name! and \verb!age!.
+\end{itemize}
+
+Here's another class that implements the \verb!Animal! interface:
+
+\begin{lstlisting}
+package animalExample;
+
+public class Piranha implements Animal {
+	private int age;
+
+	public Piranha(int age) {
+		this.age = age;
+	}
+
+	public void feed(String food) {
+		System.out.println("Piranha is eating " + food);
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public boolean manBestFriend() {
+		return false;
+	}
+
+	public void grow() {
+		System.out.println("I grow like a fish");
+	}
+}
+\end{lstlisting}
+
+Here are some more things that we should take careful note of: \begin{itemize}
+    \item More than one class can implement an interface. In this example, both \verb!Dog! and \verb!Piranha! implement \verb!Animal!.
+    \item We can rewrite methods that are provided to us. More specifically, \verb!Piranha! implements \verb!Animal!, but it rewrites the \verb!grow()! function that was originally provided to it.
+\end{itemize}
+
+Recall that interfaces define an ``is-a" relationship. Since \verb!Piranha! and \verb!Dog! implement \verb!Animal!, we can now treat them as an \verb!Animal!. A good way to verify the ``is-a" relationship is the \verb!instanceof! keyword. In Java, \verb!instanceof! allows us to check whether one object is an instance of a specified type (class, subclass, or interface).
+
+To demonstrate, suppose we declare a piranha variable \verb!p!. We could write a conditional such as \verb!if (p instanceof Animal) { /* Code to be executed */}!, in order to make sure that \verb!p! is an instance of \verb!Animal!. Why would we ever need to do this? This is particularly useful when we're casting. If we attempt to cast an object to a subclass of which it is not an instance of, Java throws a \vocab{ClassCastException}. We can prevent this exception by putting the relevant code in a conditional checking the instance of what we're casting. 

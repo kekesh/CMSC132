@@ -6,6 +6,113 @@ When casting in the context of inheritance, there are two different types of cas
     \item \vocab{Downcasting} is just going in the other direction: casting a supertype to a subtype.
 \end{itemize}
 
+Upcasting is casting an object to something more general, while downcasting is casting an object to something more specific.
+
+
 Upcasting is always allowed. There is no problem in treating a subclass object as its superclass type due to the ``is-a" relationship exhibited by the sub and superclasses. Upcasting can automatically be done by the compiler in some instances. For example, if we have a function that takes in a \verb!Person!, we could pass in a \verb!Student!, and the compiler would automatically cast the \verb!Student! as a \verb!Person!.
 
-On the other hand, downcasting isn't always allowed. 
+On the other hand, downcasting isn't always allowed. How do we know when it's allowed? With the \verb!instanceof! keyword. Consider the following example:
+
+
+\begin{lstlisting}
+package university;
+
+/* This code generates a java.lang.ClassCastException */
+
+public class UpCastingDownCasting {
+	public static void main(String[] args) {
+		Person personRefVariable;
+		Person teds = new Student("Ted", 2, 2000, 4.0);
+		Student StudentRefVariable;
+		GradStudent GradStudentRefVariable;
+
+		// Same type
+		personRefVariable = teds;
+
+		// Does not compile as teds may not be a Student; notice we defined teds
+		// as a Person variable not a Student
+		// StudentRefVariable = teds;
+
+		// Downcasting
+		// OK as teds is actually a Student; no run-time error
+		StudentRefVariable = (Student) teds;
+
+		// Downcasting
+		// run-time error (ClassCastException); ted isn't a graduate student
+		GradStudentRefVariable = (GradStudent) teds;
+	}
+}
+\end{lstlisting}
+
+Note that it's valid to assign \verb!personRefVariable! to \verb!teds! since they have the same type. On the other hand, we wouldn't be allowed to downcast \verb!StudentRefVariable! to \verb!teds! without a cast since they are not of the same time. Doing so would result in a compile-time error. In a similar manner, it wouldn't be valid to assign \verb!GradStudentRefVariable! to \verb!teds! since \verb!ted! is not a graduate student. This would result in a ClassCastException at runtime. \\
+
+\vocab{Safecasting} is a process by which we perform various checks in our code in order to ensure that we aren't performing any illegal casts. We want to perform safecasting whenever possible.
+
+The following code illustrates how we can perform safecasting:
+
+\begin{lstlisting}
+package university;
+
+import java.util.*;
+
+public class SafeDownCasting {
+	public static void main(String[] args) {
+		ArrayList<Person> list = new ArrayList<Person>();
+
+		list.add(new Person("John", 1));
+		list.add(new Student("Laura", 20, 2000, 4.0));
+		list.add(new Faculty("DrRoberts", 30, 1970));
+
+		for (int i = 0; i < list.size(); i++) {
+			Person obj = list.get(i);
+			System.out.print(obj.getName());
+			if (obj instanceof Student) {
+				Student student = (Student) obj;
+				System.out.println(", admission year is " + student.getAdmitYear());
+			} else {
+				System.out.println();
+			}
+		}
+	}
+}
+\end{lstlisting}
+
+Note how we use the \verb!instanceof! operator to verify the ``is-a" relationship between the objects we are casting between. Ultimately, this helps us prevent ClassCastExceptions. There is no need to check anything when we're upcasting. 
+
+
+\subsection{Abstract Classes}
+
+\subsubsection{Motivating Abstract Classes}
+Suppose we want to define several objects to represent different shapes, each of which have several methods whose implementation will be identical, like, perhaps, \verb!getColor()! could be used to obtain the color of the shape. However, suppose we want to add a \verb!draw()! method inside of each of the classes, which draws the shape. Clearly, this method would be dependent on what shape the function is being called on. This means that it wouldn't make sense to make a single implementation for all of the shapes. 
+
+
+But, if we didn't have a \verb!draw()! method in the \verb!Shape! superclass, our code wouldn't compile if all of our shapes were stored in an array. This is due to the compiler not being able to tell whether or not the object stored at that array index truly does have a \verb!draw()! method. Thus, we would need to add a \verb!draw()! method to our \verb!Shape! superclass for the sole purpose of it being overriden at a later point.
+
+One solution to this problem is using interfaces; however, implementing an interface would \textit{require} a class to implement all of the interface's methods. This isn't exactly what we want, because we might not want to be able to draw every shape. 
+
+Another problem that might arise comes from the fact that classes can be instantiated. Thus, one would be able to instantiate the \verb!Shape! class, ultimately ``creating" a new shape. This could lead to complications if one were to use the \verb!draw()! method on that newly created shape.
+
+This is an example in which it is a good idea to use \vocab{abstract classes}, which can be created using the \verb!abstract! keyword. Abstract classes permit us to provide the implementation of common methods, like \verb!getColor()!, while also only providing the function header for methods that might have different implementations. Unlike interfaces, abstract classes aren't implemented --- they are extended with the \verb!extends! keyword. Also, an abstract class cannot be instantiated directly; this means that a user wouldn't be able to ``create" a new shape. 
+
+We can also use the \verb!final! keyword on a method in order to prevent it from being overridden. This can be helpful when we're using abstract classes; however, it doesn't have to be used with them.
+
+
+\subsection{Inheritance versus Composition}
+
+There are two primary ways in which we can create a complex class from another: inheritance and composition. In the inheritance case, we're extending a parent class in order to solve the problem at hand, whereas in the composition case, we're defining an instance of an object to solve the problem at hand.
+
+As an example, suppose we have \verb!Permit! and \verb!Person! classes. Would it be better to make the \verb!Person! class have a \verb!Permit! object, or would it be better to make the \verb!Person! class extend the \verb!Permit! class? The former describes composition, whereas the latter describes inheritance. 
+
+A straightforward way to determine which of inheritance or composition should be used is to establish whether there is an ``is-a" or a ``has-a" relationship. If there is an ``is-a" relationship (i.e. a \verb!Circle! is a \verb!Shape!), we should be using inheritance. On the other hand, if there is a ``has-a" relationship (i.e. a \verb!Person! has a \verb!Permit!), we should be using composition. 
+
+
+In general, composition is a better design choice. This is particularly true when we have a choice between either design pattern --- we should always prefer composition over inheritance. 
+
+In composition, we explicitly have an instance variable of the given object type, which isn't the case for inheritance. 
+
+\subsection{Multiple Inheritance}
+
+\vocab{Multiple inheritance} is a feature of some object-oriented programming languages in which one class can inherit characteristics and features from more than one parent class. Essentially, multiple inheritance would allow a single class to extend more than one parent class. 
+How can this be useful? Suppose we have a class called \verb!StudentAthlete!, and we have two other classes called \verb!Student! and \verb!Athlete!. It would be useful to have the \verb!StudentAthlete! class extend both \verb!Student! and \verb!Athlete! to inherit those classes' properties. 
+
+Unfortunately, Java doesn't support multiple inheritance. However, it does permit implementing multiple interfaces. We can simulate the notion of multiple inheritance in Java by simultaneously extending a class and implementing an interface. Essentially, we could just make one of the classes that we would be extending into an interface, and we would be able to implement that interface without restriction. It does not matter which class becomes the interface.%

@@ -1,0 +1,180 @@
+\section{Wednesday, September 18, 2019}
+\subsection{More on Inner Classes}
+Last time, we introduced the notion of inner classes. Recall that inner classes are important because it allows us to access data directly in a class that is strongly related to another class. In the previous lecture, we improved a \verb!Team! class by moving its iterator inside of that class and subsequently implementing the \verb!Iterable! interface so that we can use the enhanced for loop with this object. 
+
+We can actually simplify this code even further by declaring the \verb!TeamIterator! that we are 
+
+\begin{lstlisting}
+package teamV6;
+
+import java.util.Iterator;
+
+public class Team implements Iterable<Player> {
+	private Player[] list;  /* good: now is private */
+	private int size;	    /* good: now is private */
+	
+	public Team(int maxSize) {
+		list = new Player[maxSize];
+		size = 0;
+	}
+	
+	public boolean add(Player player) {
+		if (size < list.length) {
+			list[size++] = player;
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public String toString() {
+		String answer = "";
+		
+		for (int i = 0; i < size; i++) { 
+			answer += list[i] + "\n";
+		}
+		
+		return answer;
+	}
+
+	/* Relying on anonymous inner class */
+	public Iterator<Player> iterator() {
+		return new Iterator<Player>() {
+			private int pos = 0;
+			
+			public boolean hasNext() {
+				return pos < size;
+			}
+			
+			public Player next() {
+				return list[pos++];
+			}
+			
+			public void remove() {
+				throw new UnsupportedOperationException("iterator remove not implemented");
+			}
+			
+		};
+	}
+}
+\end{lstlisting}
+In our \verb!iterator()! method, we're now declaring \verb!TeamIterator! class as we return it. In Java, this is known as an \vocab{anonymous inner class}. The adjective ``anonymous" comes from the fact that there is no way to reference this class since we haven't given it a name. 
+
+\subsection{Anonymous Inner Classes}
+An \vocab{anonymous class} is a class that is both defined and instantiated in a single, succint expression. Similar to an anonymous inner class (see above), anonymous classes aren't given names, which means that we can't reference them later on. This is particularly useful when we only want to create one instance of a class (so it wouldn't be very helpful to explicitly define a class, which is usually done for later references). 
+
+We can demonstrate the uses of anonymous classes with an example. Consider the following \verb!Tetris! class:
+
+\begin{lstlisting}
+package anonymousClasses;
+
+public class Tetris {
+	private int score;
+	
+	public int getScore() { return score; }
+	public void setScore(int score) { this.score = score; }
+	public void rotatePiece() {
+		System.out.println("Rotating");
+	}
+	public void dropPiece() {
+		System.out.println("Dropping");
+	}
+}
+\end{lstlisting}
+
+This class simply simulates some basic functions that we might want to have when playing a game of Tetris. Now suppose we wanted to create a \verb!SuperTetris! object, which is very similar to the \verb!Tetris! class, except that it should say ``Super Tetris Dropping" instead of ``Dropping" when a piece is being dropped. This can be done as follows:
+
+\begin{lstlisting}
+package anonymousClasses;
+
+public class SuperTetris extends Tetris {
+	public void dropPiece() {
+		System.out.println("Super Tetris Dropping");
+	}
+}
+\end{lstlisting}
+
+But what happens if we only want one instance of the \verb!SuperTetris! class? It seems pointless to create an entire new class just to create one instance of the class and never use the class again. This is where we can use an anonymous class so that we can define the class implicitly. Here's an example of how this can be done in a driver:
+
+\begin{lstlisting}
+package anonymousClasses;
+
+public class Driver {
+    public static void main(String args[]) { 
+        /* Anonymous class, based on the tetris class. */
+        Tetris superTetris;
+        superTetris = new Tetris() {
+            /* Overriding method. */
+            public void dropPiece() {
+                System.out.println("Super Piece Dropping");
+            }
+        };
+        
+        /* Using the object. */
+        superTetris.dropPiece();
+    }
+}
+\end{lstlisting}
+
+The above code compiles, and it works just how we want: the output is ``Super Tetris Dropping." Here, we've declared \verb!superTetris! with an anonymous inner class, which has allowed us to avoid explicitly creating a new class. Note that the declaration of an anonymous inner class requires a semicolon after the final closing bracket. 
+
+It isn't necessary for an anonymous class to be an inner class.
+
+\subsection{Static Nested Classes}
+
+We've already seen inner classes (also known as non-static nested classes), but it turns out that static nested classes have different functionalities than non-static ones. In particular, non-static nested classes cannot be instantiated without creating an instance of the outermost class. This is not true in the case of a static nested class. That is, we are able to instantiate a static nested class without an instance of the outer class. So, why would we ever use a static nested class if they can be instantiated and used independently from their outer class? One of the primary reasons is the scope of the nested class is contained in the outer class. Another reason is that, if the inner class is supporting a functionality of the outer class, it is much more readable to have the two classes together. 
+
+\subsection{Copying Objects}
+In Java, there are three ways in which we can copy an object. To demonstrate what is happening in each of these three cases, let's suppose the variable $y$ is a reference to the object $z$, and we want $x$ to be a copy of $y$.
+\begin{itemize}
+    \item A \vocab{reference copy} of $y$ would simply make $x$ point to the same memory location as $y$. This is done in Java with the expression \verb!x = y!. Any modification to either one of $x$ or $y$ will be reflected in both references. 
+    \item A \vocab{shallow copy} duplicates as little as possible. For example, a shallow copy of a collection would copy $y$'s structure into $x$, but it wouldn't copy the elements. This means that $x$ and $y$ will represent two different collections, but they will share the individual elements. One way in which this is done in Java is the \verb!.clone()! method. This performs a ``pure-byte" copy. 
+    \item A \vocab{deep copy} is very straightforward: it makes duplicates \textit{everything}. If we're duplicating a list, the structure will be copied and so will the individual elements. One way in which this type of copy can be performed in Java is by iterating through a list and inserting elements into the copy list manually. 
+\end{itemize}
+
+Let's suppose we're duplicating an array of strings. We want to duplicate the array of strings so that modifications to one of the arrays isn't reflected in the other array. We don't need a deep copy to do this --- since strings are immutable, a shallow copy is enough. 
+
+As mentioned above, we can create shallow copies of an object using the \verb!.clone()! method. The \verb!Object! class provides a \verb!clone()! method. In order to clone methods of a particular class, we need to override the \verb!clone()! method and call the \verb!Object! class's clone method. 
+
+Below is an example of cloning. Consider the following \verb!Mouse! class:
+
+\begin{lstlisting}
+package cloning;
+
+public class Mouse implements Cloneable {
+	private String type;
+	private int xPos, yPos;
+
+	public Mouse(String type) {
+		this.type = type;
+		xPos = yPos = 0;
+	}
+
+	public void moveMouse(int xPos, int yPos) {
+		this.xPos = xPos;
+		this.yPos = yPos;
+	}
+
+	public String toString() {
+		return type + "-> xPos: " + xPos + ", yPos: " + yPos;
+	}
+
+	/* Notice the return type */
+	@Override
+	public Mouse clone() {
+		Mouse obj = null;
+
+		try {
+			obj = (Mouse) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return obj;
+	}
+}
+\end{lstlisting}
+
+Here, we've defined the \verb!clone! method, which overrides the \verb!clone()! method provided to us by the \verb!Object! class. When overriding a method in Java, we're able to define the return type to be a subtype of the return type of the method that's being overridden. This is known as a \vocab{covariant return type}, and it describes what's happening in our \verb!clone()! class aboves.
+
+Note that we've also called the \verb!Mouse! superclass's \verb!clone()! method, which performs a shallow copy of the primitive types when it can. 
