@@ -86,3 +86,82 @@ T(n) = 1 + \log_2(n) + \log_2(n) + 1 = 2(\log_2(n) + 1).
 
 \noindent The high-order term here is $\log(n)$ so we conclude that this algorithm is $\O(\log(n))$. \\
 
+\subsection{Complexity of Recursive Algorithms}
+
+How can we compute the complexity of a recursive algorithm? We can do this by writing the recurrence in terms of itself. For example, consider the following program:
+
+\begin{lstlisting}
+int fact(n) {
+    if (n == 0) return 1;
+    return n * fact(n - 1);
+}
+\end{lstlisting}
+
+If $n$ is greater than $0$, then we perform exactly $3$ operations and perform a recursive call on $n - 1$. On the other hand, if $n$ is equal to $0$, then we perform only one operation. In this case, our time function can be expressed by $T(n) = T(n - 1) + 3$ with base case $T(1) = 0$. This type of equation is known as a \vocab{recurrence}. There are many ways to solve recurrences, but knowing how to solve them is not necessary in this class. \\
+
+\noindent By performing iteration, we can solve the recurrence in a very informal way by identifying a pattern:
+
+\begin{align}
+T(n) &= T(n - 1) + 3 \\
+&= T(n - 2) + 6 \\
+&= T(n - 3) + 9 \\
+&= \ldots \\
+&= T(n - k) + 3k.
+\end{align}
+
+We keep on iterating until $k = n$ in which case we obtain $T(n) = T(0) + 3n$. But since we have the base case $T(0) = 1$, we find $T(n) = 3n + 1$. Therefore, we can conclude that the algorithm runs in$\O(n)$ time. \\
+
+
+Here's another example of an algorithm (pseudocode is shown):
+
+\begin{lstlisting}
+MergeSort(Array) {
+    if (n == 1) return;
+    MergeSort(first half of array)
+    MergeSort(second half of array)
+    Merge the two halves. /* Requires n operations. */
+}
+\end{lstlisting}
+
+In this algorithm, we perform $n$ operations per recursive call. In addition, we make two calls to the algorithm with subproblem size $n/2$, so we obtain $T(n) = 2T(n/2) + n$ as our recurrence equation. The base case occurs when $n = 1$ in which case we perform just one operation. Thus, our base case is given by $T(1) = 1$.  This recurrence can be a little bit more tricky to solve, but the solution's high order term is $n\log_{2}(n)$. Thus, this algorithm runs in $\O(n\log(n))$ time. 
+
+
+\subsection{Additional Complexity Measures}
+
+So far, we have only discussed Big-$\O$ notation, which is an upper bound on the number of operations we perform. However, we can also use Big-$\Omega$ notation, which is a \textit{lower} bound on the number of operations we perform (e.g. what is the least number of operations we perform?). \\
+
+\noindent Suppose we want to find the maximum element in an array with $n$ numbers. One easy way to do this is to keep track of the maximum value seen so far, and update this value when we see a new maximum. This algorithm runs in $\O(n)$ time. But, it can also be shown that a lower bound for this algorithm is $\Omega(n)$ time. This is true because there cannot exist an algorithm that finds the maximum of $n$ numbers without at least looking at what the $n$ numbers are. But even the act of just looking at the $n$ numbers requires linear time. \\
+
+When the Big$-\O$ and Big-$\Omega$ of an algorithm are equal (i.e. $\Omega(f(n)) = \O(f(n))$ for some function $f(n)$), then we say that the algorithm is $\Theta(f(n))$. This is a stronger result. 
+
+
+\subsection{Trees}
+A \vocab{tree} is a hierarchical, non-linear data structure that can be used to represent a one-to-many relationship between elements. The data structure consists of a \vocab{root node} which is typically the topmost node in a data structure as well as many other \vocab{internal nodes}. Each node stores values and references to other nodes in the tree. Below is an example of a tree:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[level/.style={sibling distance=60mm/#1}]
+\node [circle,draw] (z){$1$}
+  child {node [circle,draw] (a) {$2$}
+    child {node [circle,draw] (b) {$3$}
+    }
+    child {node [circle,draw] (g) {$4$}}
+  }
+  child {node [circle,draw] (j) {$5$}
+    child {node [circle,draw] (k) {$6$}
+    }
+  child {node [circle,draw] (l) {$7$}}
+};
+\end{tikzpicture}
+\caption{An Example of a Tree}
+\end{figure}
+
+Here, the node labelled $1$ is the root node, and every other node is an internal node. 
+
+What are trees useful for? Trees are good for clearly depicting relationships. For example, we can model ancestry trees, or relationships between people. We can also model a network of cities with vertices representing cities, and an edge between two cities representing a roadway or path between the two cities.
+
+In the diagram above, we see that every node other than $3, 4, 6$ and $7$ have two nodes coming out, underneath them. We call these nodes the \vocab{child nodes} of the node that they are coming out of (so nodes $3$ and $4$ are the children of node $2$, and node $7$ has no children). Also, we can differentiate between the two children by using the terminology \vocab{left child} and \vocab{right child}. 
+
+The \vocab{level} of a node is a measure of the node's distance from the root. More precisely, if the node is the root of the tree, then its level is $1$. Otherwise, its level is its parent's level plus one. The \vocab{height} of a tree is the maximum level of any node in the tree. \\
+
+A \vocab{binary tree} is a special kind of tree in which each node has at most $2$ children. We will place a special focus on this type of tree, starting next lecture. 
