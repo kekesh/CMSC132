@@ -1,0 +1,97 @@
+\section{Monday, October 21, 2019}
+
+
+\subsection{Recap on Java's Hash Code Contract} 
+
+In order to recap what we learned last week, we can review Java's Hash Contract. \\
+
+\noindent Java's Hash Code Contract states that if two objects are equal (using the \verb!.equals()! method), then we must guarantee that their hash codes are also equal. What happens if we don't satisfy the hash code contract? Classes that rely on hashing will fail. 
+
+When we write our own classes, we must write classes that satisfy Java's Hash Code Contract. We will run into problems if we don't satisfy the Java Hash Code Contract and use classes that rely on hashing (like \verb!HashSet! or \verb!HashMap!). A possible problem that we might run into is being able to add elements to a set but not being able to find it during a lookup operation.  \\
+
+It is also useful to be able to recognize when valid hash functions are bad. For instance, overriding the \verb!hashCode()! method to make it \textbf{always} return $5$ is a a valid hash code. Why? Because if \verb!a.equals(b)! is true, then \verb!a.hashCode() = b.hashCode()! is also true (\verb!a.hashCode()! and \verb!b.hashCode()! will always evaluate to $-5$). But this hash code is not good because we will have many collisions -- many elements are being mapped to index $5$. 
+
+\subsection{Sets and Maps}
+
+A \vocab{set} is a collection that cannot contain duplicate elements. Two set instances are considered to be equal if they contain the same elements. Java's Collections library contains three general-purpose set implementations:
+\begin{itemize}
+    \item The \verb!HashSet! set is implemented with hashing. We have already seen this in use in our \verb!Roster! example. The elements in the \verb!HashSet! must implement the \verb!hashCode()! method. This type of set provides us with the most efficiency (in terms of time). 
+    \item The \verb!LinkedHashSet! is a \verb!HashSet! that supports the ordering of elements. This allows us to retrieve elements in the order in which we inserted them. On the other hand, the \verb!HashSet! does not guarantee any type of ordering. 
+    \item The \verb!TreeSet! guarantees that the elements in a set are in sorted order. The elements being stored in a \verb!TreeSet! must be comparable. We can also pass in custom comparators when using a \verb!TreeSet!. 
+\end{itemize}
+
+A \vocab{map} is an abstract data type that holds (key, value) pairs. We can think of maps as arrays except we aren't constrained to using integers as our indices. Instead, we can use any other type to index other values, like strings to other strings. The map interface provides methods like \verb!put(K key, V value)! to insert an element, and \verb!get(Object key)! to retrieve an element. There is also a \verb!remove(Object key)! and \verb!clear()! function to remove a single element or completely clear the map. The map concrete classes are listed below. Note that the \verb!Map! interface is not a subtype of the \verb!Collection! interface:
+
+\begin{itemize}
+\item The \verb!HashMap! map is implemented using hashing. Elements must satisfy the \verb!hashCode()! contract. The \verb!HashMap! is the most efficient in terms of time.
+\item The \verb!LinkedHashMap! supports ordering of elements (we can retrieve elements in order of insertion), but it is slower than the \verb!HashMap!, which does not guarantee any type of ordering. 
+\item The \verb!TreeMap! requires elements to be comparable, and it guarantees that elements can be retrieved in sorted order.
+\end{itemize}
+
+The following example demonstrates the differences between the three types of maps, and it also illustrates some of the primary methods that we use with maps:
+
+\begin{lstlisting}
+/*
+ * Example that shows how we can use maps.
+ */
+import java.util.*;
+public class ClassesImpMaps {
+	
+	public static void main(String[] args) {
+		System.out.println("************* HashMap test *************");
+		test(new HashMap<>());
+	
+		System.out.println("\n\n************* TreeMap test *************");
+		test(new TreeMap<>());
+		
+		System.out.println("\n\n************* LinkedHashMap test *************");
+		test(new LinkedHashMap<>());
+	}
+	
+	/* Notice the parameter is a Map, which is an interface */
+	public static void test(Map<String, Department> map) {
+		
+		/* adding <key,value> pairs to the map */
+		map.put("Mary", new Department("Electronics", 5000));
+		map.put("Peter", new Department("Music", 4500));
+		Department shoeDepartment = new Department("Shoe", 6000);
+		map.put("Zoe", shoeDepartment);
+		map.put("Laura", shoeDepartment);
+	
+		/* printing the contents */
+		Set<String> nameSet = map.keySet();
+		for (String name : nameSet) { 
+			/* finding the dept that maps to the name */
+			Department dept = map.get(name);
+			System.out.println(name + " " + dept); 
+		}
+		
+		/* Membership test */
+		if (map.containsKey("Mary"))
+			System.out.println("Mary found");
+		
+		if (!map.containsKey("Laura"))
+			System.out.println("Laura not found");
+		
+		/* Getting all the values */
+		System.out.println("All departments");
+		Collection<Department> collection = map.values();
+		for (Department dept : collection) {
+			System.out.println(dept);
+		} 
+		
+		/* Another alternative */
+		System.out.println("*Another alternative*");
+		for (Map.Entry<String, Department> elem : map.entrySet()) {
+			System.out.println(elem.getKey() + " " + elem.getValue());
+		}
+	}
+}
+\end{lstlisting}
+
+In the \verb!test! function, we take in a \verb!Map! that maps \verb!String! objects to \verb!Department! objects. Since we only specify that the parameter is a \verb!Map!, it is valid for us to pass in a \verb!HashMap!, \verb!TreeMap!, or even a \verb!LinkedHashMap!. In this example, we are mapping employee names to departments in which they work in. The \verb!test! function adds four entries to this map. Firstly, we add \verb!Mary! and \verb!Peter! who work in the \verb!Electronics! and \verb!Music! departments, respectively. Next, we add \verb!Zoe! and \verb!Laura! both of whom work in the \verb!shoeDepartment!. \\
+
+Next, we store the map's \verb!.keySet()! in the variable \verb!nameSet!, which is a function returns a \verb!Set! of keys stored in the map. By using an enhanced for-loop, we can iterate over \verb!nameSet!, but we are not guaranteed any type of ordering. \\
+
+In our ``membership test" section, we will find that the Boolean expression \verb!map.containsKey("Mary")! evaluates to true, whereas the Boolean expression \verb!map.containsKey("Laura")! evaluates to false. Finally, we provide two different ways in which we can print the values in the map. 
+

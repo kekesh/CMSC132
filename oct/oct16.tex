@@ -1,0 +1,133 @@
+\section{Wednesday, October 16, 2019}
+
+Last time, we introduced hash tables in which certain keys are mapped to indices where their corresponding values reside with the use of a function. What happens if our hash table runs out of space? In order to resolve this issue, we can create a new hash table with greater size and rehash all of our values. 
+
+\subsection{Resolving Collisions}
+
+As we have mentioned, it is desirable to have a hash function that prevents collisions. But what happens if a collision \textit{does} occur? We can't store two values in the same index in the array, and our data structure would be unreliable if we just replaced the old value (or didn't store the new value). There are two primary ways in which we can resolve collisions known as \vocab{open addressing} and \vocab{separate chaining}. In open addressing, we look for an unused entry in the table. In separate chaining, each element in the table becomes associated with more than one search key (i.e. each element becomes a bucket or a list). \\
+
+\subsubsection{Open Addressing}
+Open addressing can further be subdivided into several variations. A common theme between these variations is that they all use \vocab{probing}, which is the process for locating an open element or position in the hash table. Suppose our hash table has size $n$. \\
+
+\noindent One type of open addressing is known as \vocab{linear probing}. In this variation, when a collision occurs at some index position $k$, we look to see whether position $k + 1 \pmod{n}$ is available (not in use) If it is in use, we look at $k + 2 \pmod{n}$, and so on. Suppose we want to keep a hash table of strings, and our hash function evaluates the following:
+\begin{itemize}
+    \item \verb!hash("apple") = 5!
+    \item \verb!hash("watermelon") = 3!
+    \item \verb!hash("kiwi") = 0!
+    \item \verb!hash("mango") = 6!
+    \item \verb!hash("banana") = 2!
+    \item \verb!hash("orange") = 3!
+    \item \verb!hash("pear") = 3!
+\end{itemize}
+
+Under linear probing, we would end up with the following hash table:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+\node[stack=8]  {
+\nodepart{one}kiwi
+\nodepart{two}
+\nodepart{three}banana
+\nodepart{four}watermelon
+\nodepart{five}orange
+\nodepart{six}apple
+\nodepart{seven}mango
+\nodepart{eight}pear
+};
+\end{tikzpicture}
+\caption{Linear Probing Example}
+\end{figure}
+
+How do we get this hash table? 
+\begin{itemize}
+    \item First, we insert \verb!apple! into index $5$ (our indices start from $0$, where index $0$ is the top-most entry), \verb!watermelon! into index $3$, \verb!kiwi! into index $0$, \verb!mango! into index $6$, and \verb!banana! into index $2$. 
+    \item Next, we encounter a collision between \verb!orange! and \verb!watermelon!. But using linear probing, we can resolve this collision by noting that index $4$ is empty. Thus, \verb!orange! is moved into index $4$.
+    \item Next, we encounter a collision between \verb!watermelon! and \verb!pear!. We find the next available index, which is index $7$, so we place \verb!pear! into index $7$. 
+\end{itemize}
+
+As you may have noticed, resolving collisions with linear probing generates groups of consecutive elements in the hash table. Each group is called a \vocab{cluster}, and this phenomenon is known as \vocab{primary clustering}. Bigger clusters means longer search times since for each cluster is a sequence of probes that we must search when adding, removing, or retrieving.
+
+
+Another type of open addressing is known as \vocab{quadratic probing}. In this case, we consider elements at indices $k + j^{2} \pmod{n}$. For example, we'd first look at index $k + 1 \pmod{n}$ followed by $k + 4 \pmod{n}$, $k + 9 \pmod{n}$, and so on. Unlike linear probing, quadratic probing does not result in primary clustering. Instead, it results in \vocab{secondary clustering}, which is a phenomenon in which filled slots are mapped to values that are far away from their keys. \\
+
+\noindent Finally, one last variant is \vocab{double hashing} in which the increment of $1$ for linear probing and $j^{2}$ for quadratic probing is replaced with the result of a second, different hash function that determines the increment. \\
+
+\subsubsection{Separate Chaining}
+
+Separate chaining is a second approach to resolving collisions. In this case, each element of the table represents more than one value. Each element in the hash table is called a \vocab{bucket}, which can be represented internally with a list, sorted list, or a linked list, etc. Buckets should support searching: we should be able to determine the bucket by hashing the search key and look through the list to find the element or determine that it does not exist. Also, buckets should support insertion: we should look for an item and insert it into the found bucket if it is not found. Finally, buckets should support removal: we should be able to look for the item and remove it from the bucket. \\
+
+It is important that the number of elements in each bucket is very small. Equivalently, it is important that we do not have too many collisions. Otherwise, we might end up having to search a large list, which completely defeats the purpose of using a hash table. For example, consider the extreme case in which \textit{every} value resides in index $1$. In this case, we'll need to search a list in the worst case, which makes a hash table no better than just using an array or a Linked List. 
+
+\subsection{Load Factor}
+
+We can quantify the cost of collision resolution with a statistic known as the \vocab{load factor}. The load factor is denoted by $\lambda$ and it is defined as follows:
+
+\begin{align*}
+\lambda = \frac{\text{number of entries in hash table}}{\text{size of the hash table}}.
+\end{align*}
+
+As $\lambda$ increases, the number of comparisons needed to resolve collisions also increases. The performance of linear probing degrades the load factor increases. In order to keep reasonable efficiency, we should maintain $\lambda \leq 0.5$ (i.e. the hash table should be less than half full).  \\
+
+Once we have $\lambda > 0.5$, it is typically useful to resize the hash table and compute a new hash index for every key. This process is known as \vocab{rehashing}.
+
+\subsection{Hash Code Contract}
+
+In Java, when we're using hash functions, we must satisfy something known as the \vocab{hash code contract}. Essentially, this contract states that if \verb!a.equals(b)! evaluates to true, then we must guarantee \verb!a.hashCode() = b.hashCode()!. However, the inverse or converse of this statement do not necessarily have to be true. That is, it is not necessary for \verb@!a.equals(b)@ to imply \verb@a.hashCode() != b.hashCode()@, and it is not necessary for \verb@a.hashCode() == b.hashCode()@ to imply \verb@a.equals(b) == true@. \\
+
+Note that these conditions imply that hash functions must be deterministic in the sense that we should always get the same hash whenever we compute the hash code of an object. 
+
+\subsection{HashSets}
+
+Java provides us with a a \verb!HashSet! as a part of the \verb!Collections! framework. The \verb!HashSet! creates a collection that internally uses a hash table for storage. Here is an example of how we can use a \verb!HashSet!:
+
+\begin{lstlisting}
+package setIncorrect;
+
+import java.util.*;
+
+public class Roster {
+	private HashSet<Person> roster = new HashSet<Person>();
+
+	public void addPerson(String name, int id) {
+		roster.add(new Person(name, id));
+	}
+
+	public boolean findPerson(String name, int id) {
+		Person person = new Person(name, id);
+		
+		return roster.contains(person);
+	}
+}
+\end{lstlisting}
+
+Here, we are using a \verb!HashSet! to represent a collection of \verb!Person! objects. The \verb!addPerson! function adds another \verb!Person! object into our \verb!HashSet! with the provided name and ID. Internally, this \verb!Person! object is added into our hash table. The \verb!findPerson! method performs an internal look-up in our hash table, and checks whether a \verb!Person! object with the same name and ID already exists. \\
+
+Now consider the following driver program:
+
+\begin{lstlisting}
+package setIncorrect;
+
+public class Driver {
+	public static void main(String[] args) {
+		Roster section0101 = new Roster();
+
+		section0101.addPerson("Mary", 10);
+		section0101.addPerson("Peter", 20);
+		section0101.addPerson("Jose", 7);
+
+		if (section0101.findPerson("Peter", 20)) {
+			System.out.println("Found Peter");
+		} else {
+			System.out.println("Peter not found");
+		}
+	}
+}
+\end{lstlisting}
+
+In this driver, we add three different \verb!Person! objects into the \verb!HashSet! corresponding to our \verb!Roster!. In other words, we compute a hash code for each of our objects, and we store them into a large array. By default, the hash code corresponding to a user-made object is just the object's memory address --- we can easily verify that this satisfies the hash code contract since \verb!a.equals(b)! implies \verb!a! and \verb!b! reside in the same memory location. \\ 
+
+Next, in our code, we check whether our \verb!HashSet! contains a \verb!Person! object with name \verb!"Peter"! and Id \verb!20!. In other words, we compute the hash code for this object, and we check whether there is an entry in our hash table at this index. Assuming our hash function satisfies the hash code contract, this expression evaluates to true, so we print \verb!"Found Peter"!.  \\
+
+It is important to emphasize that, ideally, this is more efficient than using a simple array-based implementation. We are able to retrieve and store elements in expected constant time, which is better than having to iterate through the entire array to find a \verb!Person! object. 
+

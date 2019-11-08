@@ -1,0 +1,150 @@
+\section{Wednesday, October 23, 2019}
+
+Last time, we started looking at the classes that implement the maps, and we looked at a word frequency counter that counts the number of times a word appears in an array of strings.
+
+\subsection{Applications of Maps and Sets}
+
+The following example demonstrates a basic application of maps in which we count the number of occurrences of words in an array of strings:
+
+\begin{lstlisting}
+public class WordFrequencyCounter {
+	public static void main(String[] args) {
+		Map<String, Integer> map = new TreeMap<>();
+		
+		for (String word : args) {
+			if (!map.containsKey(word)) {
+				map.put(word, 1); /* First instance seen */
+			} else {
+				map.put(word, map.get(word) + 1);
+			}
+		}
+		
+		System.out.println("Words Frequency:\n");
+		for (String word : map.keySet()) {
+			System.out.println(word + "\t" + map.get(word));
+		}
+	}
+}
+\end{lstlisting}
+
+Here, we create a \verb!Map! that maps \verb!String! objects to \verb!Integer! objects. More precisely, we will be mapping words to the number of times they appear in an array. Next, we process every element in the array \verb!args! with an enhanced for-loop. For every word in the provided string array, we check whether we've seen the word before. If so, we increment the integer that it is being mapped to by one. Otherwise, we set its entry to $1$ since it has only occurred once at the given time. Note that it is important that we handle these two cases separately since it would be an error to increment the value if it has not yet been declared (the default value is not $0$!).  
+
+Finally, we print out the frequency of all of the words. Since we are using a \verb!TreeMap!, we are guaranteed that we will print the words in a sorted manner. 
+
+% end of ex
+
+Next, here's an implementation of a \verb!Course! object in which we use a maps and sets:
+
+\begin{lstlisting}
+package maps;
+
+import java.util.*;
+
+public class Course {
+	private Map<Integer, Set<String>> allSectionsMap = new HashMap<>();
+
+	public void addStudent(Integer sectionNumber, String name) {
+		Set<String> sectionSet = allSectionsMap.get(sectionNumber);
+
+		if (sectionSet == null) {
+			sectionSet = new TreeSet<>();
+			allSectionsMap.put(sectionNumber, sectionSet);
+		}
+		sectionSet.add(name);
+	}
+
+	public boolean removeStudent(String name) {
+		for (Integer sectionNum : allSectionsMap.keySet()) {
+			Set<String> sectionSet = allSectionsMap.get(sectionNum);
+			
+			if (sectionSet.contains(name)) {
+				sectionSet.remove(name);
+				if (sectionSet.isEmpty()) {
+					allSectionsMap.remove(sectionNum);
+				}
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public void printAllStudents() {
+		for (Integer sectionNum : allSectionsMap.keySet()) {
+			Set<String> sectionSet = allSectionsMap.get(sectionNum);
+			
+			for (String name : sectionSet) {
+				System.out.println(name);
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		Course course = new Course();
+
+		course.addStudent(201, "Jose");
+		course.addStudent(101, "Mary");
+		course.addStudent(101, "Kelly");
+		course.printAllStudents();
+	}
+}
+\end{lstlisting}
+
+In this implementation, we use a \verb!Map! to map integers to a \verb!Set! of strings. In the context of this class, we are mapping section numbers (which fully determine a course) to a \verb!Set! of student names, representing the people taking that course. \\
+
+In the \verb!addStudent! method, we take in a section number as well as the student to add. We retrieve the current set of students by using our \verb!Map!'s \verb!.get()! method. Subsequently, we check to see if the retrieved value is \verb!null!. This is important because, as mentioned in the previous example, there is no default value for what the keys are being mapped to. This means that we can obtain a \verb!NullPointerException! if we don't handle the case in which the \verb!sectionNumber! has no students separately. \\
+
+If the \verb!sectionSet! retrieved is null, then the class is currently empty. This means that we need to instantiate a set, make the \verb!sectionNumber! map to the \verb!sectionSet!, and finally add the student's name to the \verb!setctionSet!. On the other hand, if the \verb!sectionSet! is not null, then we can just add the student without any trouble. \\
+
+In the \verb!removeStudent! method, we iterate over all of the section numbers (i.e. all of the keys) by using the \verb!keySet! method of our map. For every key we iterate over, we retrieve the set corresponding to that key, and we check whether that student is in that course. If so, we remove the student from that course. If the course becomes empty after removing that student (that is, the student was the only student in that course), then we remove the course as well. \\
+
+Finally, the \verb!printAllStudents()! function iterates over all section numbers. For each section number, retrieve the set of students in that course. Finally, we print the names of the students in each course.  \\
+
+
+Another example in which maps can be useful is by using lists as keys. Consider the following code segment: 
+
+
+\begin{lstlisting}
+package maps;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
+public class ListsAsKeys {
+	public static void main(String[] args) {
+		HashMap<List<String>, String> favoriteDessertMap = new HashMap<>();
+
+		ArrayList<String> johnSmith = new ArrayList<>();
+		johnSmith.add("John");
+		johnSmith.add("Smith");
+		favoriteDessertMap.put(johnSmith, "Chocolate");
+
+		ArrayList<String> rosePeterson = new ArrayList<>();
+		rosePeterson.add("Rose");
+		rosePeterson.add("Peterson");
+		favoriteDessertMap.put(rosePeterson, "Ice Cream");
+
+		for (List<String> list : favoriteDessertMap.keySet()) {
+			System.out.println(list + " " + favoriteDessertMap.get(list));
+		}
+
+		/* Retrieving */
+		ArrayList<String> temp = new ArrayList<>();
+		temp.add("John");
+		temp.add("Smith");
+		if (favoriteDessertMap.containsKey(temp)) {
+			System.out.println("Favorite Dessert John Smith: " + favoriteDessertMap.get(temp));
+		}
+
+		/* Notice what happens when we cleared the entry */
+		johnSmith.clear();
+		System.out.println("Listing Map Contents After Clearing: ");
+		for (List<String> list : favoriteDessertMap.keySet()) {
+			System.out.println(list + " " + favoriteDessertMap.get(list));
+		}
+	}
+}
+\end{lstlisting}
+
+In this example, we created a \verb!HashMap! that is mapping a list of people's names (represented as \verb!String! objects) to another \verb!String! object representing their favorite food. There aren't too many new concepts going on, except that it might seem counterintuitive to use a \verb!List! as our key. Near the bottom of the code segment, after we've cleared \verb!johnSmith()!, we print out \verb![], null!. The \verb![]! indicates an empty array, and the \verb!null! indicates that the corresponding value is not present. This emphasizes that it is important not to mess with the keys that are being used. 

@@ -1,0 +1,88 @@
+\section{Friday, October 25, 2019}
+
+\subsection{Algorithmic Complexity}
+
+\subsubsection{Time Functions and Big-$\O$ Notation}
+While we have already looked at the basics of Big-$\mathcal{O}$ notation, we will now learn how to analyze programs and determine their asymptotic complexity on our own. 
+
+The \vocab{critical section} of a program is another word for the ``heart" of an algorithm. In essence, it indicates the portion of code where the most ``work" is performed in terms of time needed. The critical section of an algorithm dominates its overall execution time, and its operation is central to the functioning of a program. Typically, the sources of a critical section comes from loops or recursion.
+
+Our goal is to find the asymptotic complexity of various algorithms. The general approach for doing so is ignoring frequently executed parts of the algorithm, finding the critical of the algorithm, and determining how many times the critical section is executed as a function of the problem size. 
+
+
+Here's an example of some code in which we can easily identify the critical section:
+
+\begin{lstlisting}
+A
+for (int i = 0; i < n; i++) {
+    B /* This is the critical section. */
+}
+C
+\end{lstlisting}
+
+Suppose $A$, $B$, and $C$ are sequences of constant-time operations (for example, print statements). Then, $A$ is executed exactly once, $B$ is executed $n$ times (it is inside of a loop that loops through $n$ times), and $C$ is executed exactly once. Therefore, the total number of operations we perform is $T(n) = 1 + n + 1 = n + 2$. The high-order term of $T(n)$ is $n$, which implies that this algorithm runs in $\O(n)$ time. The function $T(n)$, which gives the exact number of operations, is referred to as our \vocab{time function}. Using this terminology, our asymptotic complexity is the high-order term of our time function. \\
+
+It is important to be able to compute the time function exactly. Thus, it is important to be careful, particularly with the bounds of our loops. In the previous example, it is clear that the loop iterates through exactly $n$ times (once for $i = 0$, once for $i = 1$, all the way up to $i = n - 1$). If we instead wrote our loop as \verb!for (int i = 1; i <= n; i++)!, then our loop would still iterate through $n$ times. But \verb!for (int i = 0; i <= n; i++)! iterates through $n + 1$ times. Another example of a for-loop is given by \verb!for (int i = 0; i < n; i += n)!, which executes only once. \\
+
+
+Here's another example:
+
+\begin{lstlisting}
+A
+for (int i = 0; i < n; i++) {
+    B
+    for (int j = 0; j < n; j++) {
+        C
+    }
+}
+D
+\end{lstlisting}
+
+Once again, suppose $A, B, C, D$ are sequences of constant-time operations. In this scenario, $A$ is executed exactly once. $B$ is executed exactly $n$ times (it is in a for-loop that iterates through $n$ times), $C$ is executed $n^{2}$ times (it is inside a for-loop that executes another for-loop that iterates $n$ times exactly $n$ times, so we have $n \cdot n = n^{2}$ executions).  Finally, $D$ is executed once. Therefore, our time function is given by
+\[
+T(n) = 1 + n + n^{2} + 1 = n^{2} + n + 2.
+\]
+
+The high-order term of $T(n)$ is $n^{2}$, so this algorithm runs in $\O(n)$ time.  \\
+
+Here is a third example:
+
+\begin{lstlisting}
+A
+for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+        B /* Critical section. */
+    }
+}
+\end{lstlisting}
+
+Here, $A$ is executed exactly once. But now, the inner for-loop depends on the value of the outer for-loop. How do we determine the number of times $B$ is executed? We can note that when $i = 0$, the inner for-loop starts at $j = 1$, and it goes up to $n$. This contributes a total of $(n - 1)$ executions. Next, when $i = 1$, the inner for-loop starts at $j = 2$, and goes up to $n$. This contributes a total of $(n - 2)$ executions. This process continues up until the inner for-loop contributes $0$ executions. Therefore, our time function is given by
+\begin{align*}
+T(n) &= \underbrace{1}_{\text{Executions of Statement $A$}} + \underbrace{\left((n - 1) + (n - 2) + \cdots + 1 + 0\right)}_{\text{Executions of Statement $B$}} \\[1em]
+&= 1 + \frac{n(n - 1)}{2} \\[1em]
+&= \frac{n^2}{2} - \frac{n}{2} + 1
+\end{align*}
+
+\noindent where we used the identity $\sum_{k=1}^{n} k = n(n + 1)/2$ to simplify the number of executions of Statement $B$. Since the high-order term of of $T(n)$ is $n^2$, we conclude our algorithm is $\O(n^{2})$. 
+
+\noindent It is important to note that minor changes to algorithms won't affect the asymptotic complexity of the algorithm. For example, if we instead looped from $i = 0$ and $j = i + 1$ up to $n/2$ instead of $n$, our algorithms would still be $\O(n^2)$ (although, our time functions would decrease). Essentially, Big-$\O$ notation is mostly concerned with \textit{long-run} behavior, whereas time functions are concerned with exact behavior. \\
+
+Here is another example:
+
+\begin{lstlisting}
+int i = 1;
+while (i < n) {
+    /* This is the critical section. */
+    A
+    i = 2 * i;
+}
+B;
+\end{lstlisting}
+
+\noindent In this case, the statement $i = 1$ contributes $1$ to our time function (the time function accounts for \textit{every} operation). Now, how many times does $A$ execute? The answer is $\log_{2}(n)$. This can be seen easily by plugging in different powers of $2$ for $n$, and tracing the code. Logarithmic time complexity typically indicates that we are increasing the loop variable by some constant factor, or we're reducing the problem at-hand by a constant factor. Thus, statement $A$ contributes a $\log_2(n)$ term to our time function, and the re-assignment of $i$ inside of the for-loop contributes another $\log_2(n)$ term. Finally, the statement $B$ executes one more operation, from which we obtain
+\[
+T(n) = 1 + \log_2(n) + \log_2(n) + 1 = 2(\log_2(n) + 1).
+\]
+
+\noindent The high-order term here is $\log(n)$ so we conclude that this algorithm is $\O(\log(n))$. \\
+

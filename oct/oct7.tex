@@ -100,7 +100,8 @@ Next, we can look at a \verb!getListWithDataInBetween! function, which takes in 
 Once again, this method uses the Tom and Jerry Traversal. This method is fairly similar to the \verb!delete! method. We keep on comparing nodes until we find one that lies between our two bounds. Once such a node is found, we create a new node with the data of the current node we're at, and this node is subsequently set equal to the \verb!head! field of our newly created Linked List. 
 
 Note that there is a special case for when we're adding the first node into our Linked List (in this case, we should make the newly created node our head). 
+%incomplete
 
-\subsection{Doubly Linked Lists} 
+\subsection{Queue Implementation}
+Recall that a queue is a first-in-first-out (FIFO) data structure. One of the easiest ways in which we can implement a queue is through a Linked List. This is true because we can keep a pointer to the first node, which allows us to remove it easily. Also, we can keep a reference to the last node since it allows us to add elements easily. An alternative implementation would use an array by using a ``circular" array in which we keep pointers to where we should add and remove elements.
 
-\section{Wednesday, October 10, 2019}

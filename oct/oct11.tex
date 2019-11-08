@@ -1,0 +1,113 @@
+\section{Friday, October, 11, 2019}
+
+\subsection{Recursive Array Functions}
+
+In order to get a better understanding of recursion, we can show a few array-based problems in which recursion can be used as solutions. \\
+
+\noindent Given an array and a target value, the following \verb!find()! method returns \verb!true! if the provided target value is present in the array and \verb!false! otherwise. This problem can be solved non-recursively very easily: iterate over all values, and compare each value to the provided target value. But for the sake of demonstration, we will look at the following recursive solution:
+
+\noindent
+\begin{lstlisting}
+	public static boolean findElementAuxiliary(int[] array, int index, int target) {
+		if (index > array.length - 1) {
+			/* Empty array segment */
+			return false;
+		} else {
+			if (array[index] == target) {
+				return true;
+			} else {
+				return findElementAuxiliary(array, index + 1, target);
+			}
+		}
+	}
+\end{lstlisting}
+
+In this example, we have a base case of when the Boolean expression \verb!index > array.length - 1! is true. When this logical expression evaluates to \verb!true!, our current index exceeds the size of the array. In other words, if we've gotten this far in the array without already having found the value, then we can conclude that the value does not exist in the array. On the other hand, we perform our recursive step when \verb!index <= array.length - 1! is true. In this case, we simply compare the current value at our index to the target value. If there is an equality, we return \verb!true! since we can conclude that our target value exists. If there isn't an equality, we make a recursive call to the same function with an increased index (so we will be looking at the next element in the array on the next recursive call). \\
+
+Here's another example of a recursive function which counts the number of instances of a provided target element:
+
+\begin{lstlisting}
+	public static int instancesOfElementAuxiliary(int[] array, int index, int element) {
+		if (index > array.length - 1) {
+			/* Empty array segment */
+			return 0;
+		} else {
+			if (array[index] == element) {
+				return 1 + instancesOfElementAuxiliary(array, index + 1, element);
+			} else {
+				return instancesOfElementAuxiliary(array, index + 1, element);
+			}
+		}
+	}
+\end{lstlisting}
+
+Once again, our base case occurs when the Boolean expression \verb!index > array.length - 1! is true. If this is true, our current index exceeds the capacity of the array, and there are no more instances of the target value. In our recursive step, we compare the current index value to the target. If there is a match, we add \verb!1! to our return value and continue looking at other elements in our array for further matches. On the other hand, if there isn't a match, we simply continue looking at other elements in our array for any further matches. \\
+
+\noindent Intuitively, this recursive function does exactly what we would do if we were counting the number of occurrences of an element in an array by hand. We would start a counter in our head, and we would look at each index of the array in a left-to-right manner. Upon encountering a value that matches our target value, we will increment this counter and continue looking at the next elements. \\
+
+
+Something that is important to note is that both of the recursive functions we've looked at so far have had an \verb!index! as a parameter. This parameter allows us to iterate through the array in a recursive fashion since we're able to keep track of where we currently are in the array. Since all initial calls to this function will have the \verb!index! parameter set equal to $0$, we can overload our recursive function as follows:
+
+\begin{lstlisting}
+public static int instancesOfElement(int[] array, int element) {
+		return instancesOfElementAuxiliary(array, 0, element);
+}
+\end{lstlisting}
+
+From the \verb!main!, we can now make use of the \verb!instancesOfElement! function, which only takes in an array and a target value to count. For example, we can now write \verb!System.out.println(findElement(data, 349));! instead of always having $0$ as one of the third parameters. The \verb!instancesOfElementAux! function, which performs the work to help another function, is known as an \vocab{auxillary function}.
+
+\subsection{Recursive Linked List Functions}
+
+In the two previous recursive array functions we've seen, we can note that we stopped iterating upon hitting the end of our array (i.e. when \verb!index > array.length - 1! is true). This is a very common base case when implementing recursive array functions since it permits us to iterate through the array until we reach the end. \\
+
+In a similar manner, we can create recursive linked list functions whose base case occurs when we reach the end of the list. But since we don't have a \verb!.length! function anymore, we can just compare the current node that we are at to \verb!null!. \\
+
+\noindent Here is a very simple recursive Linked List function, which simply prints a Linked List:
+
+\begin{lstlisting}
+	public void printListAux(Node headAux) {
+		if (headAux != null) {
+			System.out.println(headAux.data);
+			printListAux(headAux.next);
+		}
+	}
+\end{lstlisting}
+
+We just check whether the current node we are it is \verb!null! (if this is true, then we've hit the end of the Linked List). If it is \verb!null!, we don't do anything --- no action is necessary here since we aren't returning anything. On the other hand, if the node is not null, then we print the contents of the current node, and we look at the next node with a recursive call. Consider the following Linked List:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=2,
+    draw, rectangle split horizontal}, >=stealth, start chain]
+
+  \node[list,on chain] (A) {1};
+  \node[list,on chain] (B) {2};
+  \node[list,on chain] (C) {3};
+  \node[on chain,draw,inner sep=6pt] (D) {};
+  \draw (D.north east) -- (D.south west);
+  \draw (D.north west) -- (D.south east);
+  \draw[*->] let \p1 = (A.two), \p2 = (A.center) in (\x1,\y2) -- (B);
+  \draw[*->] let \p1 = (B.two), \p2 = (B.center) in (\x1,\y2) -- (C);
+  \draw[*->] let \p1 = (C.two), \p2 = (C.center) in (\x1,\y2) -- (D);
+\end{tikzpicture}
+\caption{Linked List Recursive Print Demonstration}
+\end{figure}
+
+\noindent With the use of our \verb!printListAux! function, we would end up printing \verb!1 2 3! if we passed in a representation of the above Linked List into our function. How can we modify this function to make the Linked List print in reverse order? In other words, how can we print \verb!3 2 1! instead of \verb!1 2 3!? This can be done by switching the order of the print statement and the recursive call. This way, we will recurse to the base case prior to performing any printing. \\
+
+Now here is the Linked List analogue of the recursive \verb!find! method that we implemeneted earlier for arrays:
+
+\begin{lstlisting}
+    public boolean findAux(Node headAux, T target) {
+		if (headAux != null) {
+			int result = headAux.data.compareTo(target);
+			return result == 0 ? true : findAux(headAux.next, target);
+		}
+
+		return false;
+	}
+\end{lstlisting}
+
+This is doing the exact same thing as what our recursive array function performed. Our base case occurs once we've reached the end of the Linked List (i.e. when \verb!headAux! is \verb!null!). When we haven't hit the end of our Linked List, we check whether the current Linked List contains our \verb!target! value. If it does, we return true. Otherwise, we look at the next node. Note that in this implementation, we use the \verb!compareTo! method since our Linked List is implemented using generics. \\
+
+Something else to keep note of is that it is important to keep our parameter name for the node (which is currently \verb!headAux!) different from the name that we have for our Linked List's \verb!head! in the Linked List class. Otherwise, the compiler will instead be referencing the \verb!head! instance variable. 

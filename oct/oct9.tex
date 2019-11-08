@@ -1,0 +1,54 @@
+\section{Wednesday, October 9, 2019}
+
+When you have a program in Java, there are four areas of memory: the \vocab{stack}, \vocab{heap}, \vocab{static section}, and \vocab{code}. The stack is where local variables and recursive function calls are stored.
+
+\subsection{Introduction to Recursion}
+
+\vocab{Recursion} is a strategy for solving problems in which solutions to larger problems depend on solutions to smaller instances of the same problem. More precisely, a \vocab{recursive function} is a procedure that calls itself. The ``general" pseudocode to solving recursive problems is to solve the problem directly if it is simple or trivial enough, and otherwise simplify the problem into smaller instances of the original problem, small the smaller instances using the same algorithm, and combine the solutions to form the solution to the original problem. \\
+
+\noindent A classical example for demonstrating recursive functions is a factorial function. Recall $n! = n(n - 1)(n - 2)\cdots (1)$. By rewriting this expression as $n! = n \cdot (n - 1)!$ (note that this is an equivalent definition), we can write a program that computes factorials as follows:
+
+\begin{lstlisting}
+/* Given an integer n, return n! */
+int fact(int n) {
+    if (n == 0) return 1; /* Base case */
+    return n * fact(n - 1); /* Recursive step */
+}
+\end{lstlisting}
+
+\noindent In this program, we've used the fact that $n!$ is equal to $n \cdot (n - 1)!$. We reduce each problem (i.e. the task of computing a factorial) into a smaller-sized subproblem (computing a factorial of a smaller number) until our problem is very easy to solve (we stop recursing when $n = 0$ is true). The case(s) in which we stop recursing and solve the problem directly are called our \vocab{base cases} (for example, here we would say ``$n = 0$ is our base case). On the other hand, the case(s) in which we continue recursing is called our \vocab{recursive step}. Another way to interpret recursive functions is a function that calls another function that does the same thing as the function we're currently in is doing. \\
+
+\noindent We can prove that recursive algorithms work correctly through \vocab{induction}; however, we will not be proving correctness in this class. \\
+
+\noindent What makes recursion possible? Recursion is made possible with the call stack, which is one of the four areas in memory. Essentially, the state of the current procedure or method is saved when the procedure is invoked so that we can easily restore back and continue from where we left off in a function upon encountering a recursive call. \textit{Every} function call gets its own stack space. Here is a diagram that depicts the call stack for a \verb!fact(3)! call:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+\node[stack=6]  {
+\nodepart{one}factorial(0)
+\nodepart{two}factorial(1)
+\nodepart{three}factorial(2)
+\nodepart{four}factorial(3)
+\nodepart{five}$x = 3$
+\nodepart{six}args
+};
+\end{tikzpicture}
+\caption{Call Stack for fact$(3)$}
+\end{figure}
+
+The above diagram depicts what happens when we call the \verb!fact! function with $x = 3$. The \verb!args! and \verb!x = 3! entries are depicted in the stack just for completeness --- this is to emphasize that function calls share the stack space with local variables as well as the function ``call" to the main function. 
+
+What are the pros and cons of using recursion? Some problems are recursive in nature, so it can be easier to implement a recursive algorithm. This means that recursive algorithms can also be simpler and easier to debug, understand, and maintain. On the other hand, having so many function calls can lead to \vocab{function overhead}, which includes the time needed to switch between functions. \\
+
+Consider the following alternative approach to implementing the \verb!fact! method:
+
+\begin{lstlisting}
+int fact(int n) {
+    int res = 1;
+    for (int i = n; i > 0; i--) { res *= i; }
+    return res;
+}
+\end{lstlisting}
+
+This implementation of \verb!fact! is actually more efficient than the first recursive definition that we showed. The reason why we showed the first example is just for demonstration purposes.

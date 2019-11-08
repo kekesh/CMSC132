@@ -1,0 +1,73 @@
+\section{Monday, October 14, 2019}
+
+\subsection{More Recursion with Linked Lists}
+
+Now, we can look at a more intricate example than what we have seen before. We will look at a function that takes returns an ArrayList of node entries in which the entries lie in between two provided values:
+
+\begin{lstlisting}
+    public ArrayList<T> getDataBetween(T start, T end) {
+		ArrayList<T> answer = new ArrayList<T>();
+
+		getDataBetweenAux(head, start, end, answer);
+
+		return answer;
+	}
+
+	private void getDataBetweenAux(Node headAux, T start, T end, ArrayList<T> answer) {
+		if (headAux != null) {
+			if (headAux.data.compareTo(start) >= 0 && headAux.data.compareTo(end) <= 0) {
+				answer.add(headAux.data);
+			}
+			getDataBetweenAux(headAux.next, start, end, answer);
+		}
+	}
+\end{lstlisting}
+
+Here, we have an auxillary function that takes in a \verb!headAux! node variable, which is used to tell us where we currently are in the array. Furthermore, we take in a \verb!start! and \verb!end! variable, and we want to add all nodes whose value lies between \verb!start! and \verb!end! into our ArrayList. \\
+
+\noindent Similar to the previous functions we've encountered, our base case consists of checking whether we've reached the end of our Linked List. This is done by comparing \verb!headAux! to null. If we've hit the end of our Linked List, no action is necessary since our function is \verb!void! (there is nothing to return). On the other hand, if we haven't hit the end of our Linked List, we can compare the current node's data field and check whether it lies between the \verb!start! and \verb!end! values provided. If it does, we can add this value into our \verb!ArrayList!. \\
+
+The approach taken by this recursive method differs from what we've seen before. In previous recursive functions, when we were returning an integer, boolean, or simply printing values, we would have a \verb!return! statement that would give us what we wanted from the function. In this function, however, we pass in an empty ArrayList which gets modified into what we want. This implementation allows us to not have to keep track of all of the elements that lie between the \verb!start! and \verb!end! values provided since we're adding the value immediately after this condition is satisfied (this gives our function a ``memoryless" property). \\
+
+\subsection{Tail Recursion}
+
+\vocab{Tail recursion} is a type of recursive function in which we do not need to perform any further actions on a recursive call. In other words, a tail recursive function is a recursive function in which the function calls itself at the end (the ``tail" of the function) of the function in which no computation is done after the recursive call. For example, the \verb!getDataBetweenAux! function that we just saw is tail recursive because no further processing is necessary once we've made the last recursive call. On the other hand, the \verb!instancesOfElementAuxillary! function that we saw for arrays is not tail recursive since we might need to add $1$ to the value returned by the recursive call. \\ 
+
+\noindent Why do we care about tail recursion? Mostly because using tail recursion allows us to write more optimized code.  Since tail recursive functions don't have any processing after their recursive calls, there is no need to actually store the current function in the stack. Instead, we can save some memory and only store the recursive call. \\
+
+
+\subsection{Common Recursion Problems}
+
+Some common recursion-related problems that one may encounter are listed below:
+
+\begin{itemize}
+    \item Infinite recursion: This problem can occur if our recursive step does not simplify the original problem into a smaller-sized subproblem. We can also encounter infinite recursion when we forget to include a base case. For example, something like, \verb!int bad(int n) { if (n == 0) return bad(n-1); }! is an example of infinite recursion since we will keep calling this function without terminating. Eventually, our program halts when our stack runs out of memory from our recursive calls. This is known as a \vocab{stack overflow}. 
+    \item Efficiency: Just because recursion works doesn't mean it's the best solution. This is particularly true since recursive functions often perform the same work over and over again. 
+\end{itemize}
+
+\subsection{Introduction to Hashing}
+
+\vocab{Hashing} is a technique used for storing key-value entries into the array. The process of hashing is utilized by \vocab{hash tables}, which are data structures that allow us to ideally insert and retrieve values in constant time.  For example, let's say there's a collection of objects and a data structure needs to answer queries of the form ``Is this object in the data structure?" (e.g. is this word in the dictionary?).  By using hashing, we can do this in less time than it takes to perform a binary search. \\
+
+How is hashing performed? The idea is to first find a function (known as a \vocab{hash function}) that maps the elements of the provided collection to an integer between $1$ and $N$, where $N$ is some number larger than the number of elements in your collection. For example, if you want to store the characters \verb!'a'!, \verb!'b'!, and \verb!'c'!, then we require $N \geq 3$. Now, we can keep an array indexed from $1$ to $N$ (so we have an array of size $N$), and we can store each element at the position that the function evaluates the element as. So if our hash function is $f(x)$ and $f(a) = 1$, $f(b) = 2$, and $f(c) = 3$, then we would store \verb!'a'! in index $1$, and so on. Now, what if we want to determine if an element is present in our data structure? This is also simple: just plug in the value we want to check into our function, and check whether the element is present in the index computed. \\
+
+What are some desirable properties of hash functions?
+\begin{itemize}
+    \item A hash function should be quick to compute. This is true because we want our hash table data structure to support quick retrieval and storing of data. If it takes too much time to compute the index of where a value of interest resides, our hash table itself will run slowly when computing indices of where data should reside.
+    \item A hash function should \vocab{collision-free}. This means that it should be difficult to produce two distinct keys that map to the same value. On the extreme end, suppose we had a function that \textit{always} produced $1$, no matter what value was provided to it. This means that multiple values would get mapped to the first index in the array, which is not desirable. A function that produces \textit{no collisions} is called a \vocab{perfect hash function}.  
+    %A hash function being collision-free is a desirable property because, otherwise, multiple keys would map to the same index in the array.  On the extreme end, we say a hash function is \vocab{ideal} if every search key corresponds to a unique element in the hash table. Using a function that distributes values approximately uniformly reduces the probability of collisions occurring.
+\end{itemize}
+
+
+So, what are some examples of good hash functions? Typically, it's a good idea to create a relatively huge value and use the modulus operator in order to reduce it to the size of our array (the process of reducing this value to the size of the array is referred to as \vocab{scaling}). This works particularly well when our hash table's size is a prime number. \\
+
+In Java, we can generate a \vocab{hash code} (the value produced by the hash function, prior to reducing it to the size of the array with the modulus operator) for a string by using the built-in \verb!.hashCode()! function:
+
+\begin{lstlisting}
+System.out.println("Java".hashCode()); // Prints 2301506.
+\end{lstlisting}
+
+How does \verb!"Java"! produce $2301506$?. The ASCII value for J, a, and v are $74, 97$, and $118$, respectively. The hashCode is then computed by $74 \cdot (31)^{3} + 97 \cdot (31)^{2} + 118 \cdot 31 + 97 = 2301506$. \\
+
+This is an example of how hash codes can be computed on strings. For primitive types, like floats or doubles, hash functions typically manipulate the internal binary representation to produce a hash code. For practical purposes, it's usually not plausible to produce a perfect hash function that produces distinct values for every key. In pratice, it's good to pick something that seems fairly random and verify that it works.
+
