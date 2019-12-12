@@ -1,0 +1,44 @@
+\section{Monday, November 1, 2019}
+
+\subsection{Binary Search Tree Implementation}
+    
+Recall that the \vocab{size} of a tree is the total number of nodes in the tree.  We can define a recursive function to determine the size of a tree as follows:
+
+
+\begin{lstlisting}
+	public int size() {
+		return sizeAux(root);
+	}
+
+	public int sizeAux(Node rootAux) {
+		return rootAux == null ? 0 : 1 + sizeAux(rootAux.left) + sizeAux(rootAux.right);
+	}
+\end{lstlisting}
+
+This recursive function adds $1$ if the current node we're at isn't null, and it recurses on the left and right subtrees. Each node contributes $1$ to the size, which is exactly what we want.
+
+
+Finally, here's a recursive function that computes the height of a tree (the maximum-lengthed path from the root to a leaf node):
+
+\begin{lstlisting}
+    /* Note: The height of an empty tree is not defined. */
+	/* Source: https://xlinux.nist.gov/dads/HTML/height.html */
+	public int height() {
+		if (root != null) {
+			return heightAux(root);
+		}
+		return -1;
+	}
+	
+	public int heightAux(Node rootAux) {
+		if (rootAux.left == null && rootAux.right == null) {
+			return 0;
+		} else if (rootAux.left != null && rootAux.right == null) {
+			return 1 + heightAux(rootAux.left);
+		} else if (rootAux.left == null && rootAux.right != null) {
+			return 1 + heightAux(rootAux.right);
+		} else {
+			return 1 + Math.max(heightAux(rootAux.left), heightAux(rootAux.right));
+		}
+	}
+\end{lstlisting}
