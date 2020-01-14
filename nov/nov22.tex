@@ -1,0 +1,56 @@
+\section{Friday, November 22, 2019}
+
+\subsection{More on Graph Traversals}
+
+Last time, we mentioned that breadth-first search and depth-first search traversals can both be used to explore a graph. 
+
+As an example, we can trace out the two algorithms in the following graph:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+    \node (A) at (0,0) {A};
+    \node (B) at (1,3) {B};
+    \node (C) at (2.5,4) {C};
+    \node (D) at (4,3.3) {D};
+    \node (E) at (4,0) {E};
+    % \node (B)
+\end{scope}
+
+\begin{scope}[>={Stealth[black]},
+              every node/.style={fill=white,circle},
+              every edge/.style={draw=red,very thick}]
+    \path [-] (A) edge (B);
+    \path [-] (C) edge (B);
+    \path [-] (C) edge (D);
+    \path [-] (B) edge (D);
+    \path [-] (D) edge (E);
+\end{scope}
+\end{tikzpicture}
+% \caption{An }
+\end{figure}
+
+First suppose we run the breadth-first search algorithm with source vertex $C$. At this point, vertex $C$ enters our queue, and we mark $C$ as ``visited". At this point, we begin to process $C$'s neighbors. We add both $B$ and $D$ to the queue. At this point, $C$ has no more neighbors, so we're done processing $C$. 
+
+Next, we can dequeue the vertex at the front of our queue; this vertex will be processed next. Now, we will process vertex $B$. When looking at $B$'s neighbors, we will add $A$ to the queue, and we will continue processing. At this point, vertex $B$ should be marked as visited.
+
+On the next iteration, we dequeue $D$, and we add $E$ to the queue to process. Now, $D$ will be marked as visited. 
+
+Finally, when we dequeue $A$ and $E$ on the last two iterations, we will complete the iteration without processing any neighbors since there are no neighbors that have not already been visited. At this point, every vertex should be visited, so our breadth-first search traversal is complete. The order in which each vertex was processed was $C, B, D, A, E$. 
+
+
+Next, we will discuss the depth-first search traversal. 
+
+
+Starting with vertex $C$, we push $B$ and $D$ onto the stack. Since stacks are last-in-first-out data structures, the next vertex we will go to is $D$. This completes the processing of vertex $C$.
+
+Next, we process the neighbors of $D$, and we add vertices $B$ and $E$ to the stack (vertex $B$ gets added since it hasn't been marked as visited yet!). At this point, we mark vertex $D$ as visited, this completes the processing of vertex $D$.
+
+Third, we go to vertex $E$; however, it has no non-visited neighbors to process. Thus, we exit immediately, and we go to the next vertex at the top of our stack (vertex $B$) to visit. 
+
+When processing vertex $B$, we add vertex $A$ to the top of our stack. At this point, vertex $B$ has been fully processed. 
+
+
+Finally, we process vertex $A$. However, this vertex has no non-visited vertices to process, so we mark $A$ as visited, and we have finished this iteration. At this point, the remaining entries in our stack are all visited, so our algorithm terminates. The depth-first search traversal is complete.
+

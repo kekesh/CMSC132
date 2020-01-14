@@ -1,0 +1,194 @@
+\section{Monday, November 18, 2019}
+\subsection{More on Locks}
+
+Last time, we saw the concept of locks, which can be used to prevent data races when multithreading. In our previous example, we used Java's \verb!Object! class to represent a lock; however, it turns out that we can actually use \textit{any} object to represent a lock (like a \verb!String! object, or a user-defined object). This can be helpful since we can often use the object that we only want a single thread accessing at a time as a parameter to our \verb!synchronized! block rather than creating a new lock \verb!Object!. This is demonstrated in the example below.
+
+
+Consider the following code segment which models the bank accounts of two types of shoppers --- normal buyers and excessive buyers.
+
+
+Firstly, here is the \verb!NormalBuyer! class: 
+
+
+\begin{lstlisting}
+public class NormalBuyer extends Thread {
+	private Account account;
+	
+	public NormalBuyer(Account account) {
+		this.account = account;
+	}
+
+	public void run() {
+		System.out.println("Normal buyer about to deposit");
+		synchronized(account) {
+			account.deposit(999);
+		}
+		
+		System.out.println("Window shopping by Normal buyer");
+		
+		System.out.println("Normal buyer is now buying");
+		synchronized(account) {
+			account.withdrawal(100);
+		}		
+	}
+}
+\end{lstlisting}
+
+Next, here is the \verb!ExccessiveBuyer! class:
+
+\begin{lstlisting}
+public class ExcessiveBuyer extends Thread {
+	private Account account;
+	
+	public ExcessiveBuyer(Account account) {
+		this.account = account;
+	}
+
+	public void run() {
+		System.out.println("Excessive buyer about to deposit");
+		synchronized(account) {
+			account.deposit(2000);
+		}
+		
+		System.out.println("Window shopping by Excessive buyer");
+		System.out.println("Window shopping by Excessive buyer");
+		System.out.println("Window shopping by Excessive buyer");
+		
+		System.out.println("Excessive buyer is now buying");
+		synchronized(account) {
+			account.withdrawal(1999);
+		}
+	}
+}
+\end{lstlisting}
+
+As we can see, the \verb!NormalBuyer! deposits $999$, prints a statement, and it subsequently withdraws $100$. On the other hand, the \verb!ExcessiveBuyer! deposits $2000$, prints a few statements, and finally withdraws $1999$. 
+
+Now consider the following driver which creates one thread for the normal buyer and a second thread for an excessive buyer. Both of the buyers share the same \verb!Account! object.
+
+\begin{lstlisting}
+public class Driver {
+	public static void main(String[] args) {
+		Account sharedAccount = new Account();
+		Thread excessiveBuyer = new ExcessiveBuyer(sharedAccount);
+		Thread normalBuyer = new NormalBuyer(sharedAccount);
+		
+		excessiveBuyer.start();
+		normalBuyer.start();
+		try {
+			excessiveBuyer.join();
+			normalBuyer.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println(sharedAccount.getBalance());
+	}
+}
+\end{lstlisting}
+
+Since both the \verb!excessiveBuyer! and \verb!normalBuyer! are sharing the \verb!sharedAccount! object, we need to protect the object with a lock whenever we are making changes to the account balance. This is why our \verb!run! methods have \verb!synchronized (...) { ... }! blocks with a shared object. Note that the print statements aren't inside of the \verb!synchronized! block since it isn't a good idea to synchronize when it isn't necessary (this allows the scheduler to switch between threads whenever it deems that to be a good choice). Ultimately, this allows us to maximize concurrency. 
+
+
+It turns out that there's actually an alternative solution that allows us to abstract our solution even further. This alternative solution is to move the \verb!synchronized! block from the \verb!ExcessiveBuyer! and \verb!NormalBuyer! classes to the \verb!Account! class. By doing so, whoever is using the \verb!Account! class doesn't have to bother with synchronizing their use of \verb!Account! objects themselves (everything is already done in the implementation of an \verb!Account! for them). Under this alternative solution, we would be able to remove the \verb!synchronized! blocks in our \verb!ExcessiveBuyer! and \verb!NormalBuyer! classes, and the \verb!Account! class would be modified to look like this:
+
+\begin{lstlisting}
+public class Account {
+	private double balance = 0;
+	
+	public void deposit(double amt) {
+		synchronized(this) {
+			double local = balance;
+			
+			local = local + amt;
+			balance = local;
+		}
+	}
+
+	public void withdrawal(double amt) {
+		synchronized(this) {
+			double local = balance;
+			
+			local = local - amt;
+			balance = local;
+		}
+	}
+	
+	public double getBalance() {
+		synchronized(this) {
+			return balance;
+		}
+	}
+}
+\end{lstlisting}
+
+Take note of how this implementation of \verb!Account! uses the \verb!this! keyword in order to use itself as a lock. This is allowed, and it allows us to practice synchronization without having to introduce a new object.
+
+To justify why this solution is better than the previous solution, suppose we want to pass our \verb!Account! class to someone else, and they want to use the \verb!Account! object for a variety of purposes. With this new implementation, the people who we pass our code to won't have to deal with data races themselves (the \verb!Account! class now takes care of data races itself; the class is now thread safe). 
+
+Can we do even better? Yes --- instead of using \verb!synchronized(this) { ... }! blocks that cover entire functions, Java allows us to add the \verb!synchronized! modifier to function headers. However, this modifier should only be used if \textit{every} statement inside of the function needs to be protected by the lock. Here's our updated code with \verb!synchronized! functions in practice:
+
+\begin{lstlisting}
+public class Account {
+	private double balance = 0;
+
+	public synchronized void deposit(double amt) {
+		double local = balance;
+		
+		local = local + amt;
+		balance = local;
+	}
+
+	public synchronized void withdrawal(double amt) {
+		double local = balance;
+		
+		local = local - amt;
+		balance = local;
+
+	}
+
+	public synchronized double getBalance() {
+		return balance;	
+	}
+}
+\end{lstlisting}
+
+\subsection{Common Mistakes with Multithreading}
+
+There are several things that can go wrong when using concurrency. In this section, we will discuss some of the common mistakes.
+
+
+\begin{enumerate}
+    \item Using different locks for each thread can be a problem since the mutual exclusion of threads depends on threads acquiring the same lock. There cannot be synchronization if threads have different locks which means that data races may still occur. We can usually resolve this issue by making our lock object \verb!static! and global.
+    \item Threads should not let go of a lock until they're completely finished with the critical section. It would be incorrect to break a single \verb!synchronized! block into two \verb!synchronized! blocks even if they are one after another. To demonstrate what is meant by this statement, consider the following code that is used by a thread to increment a shared variable:
+\begin{lstlisting}
+public class DataRace extends Thread {
+    static int common = 0;
+    static Object lockObj = new Object(); // all threads use lockObj’s lock
+    public void run() {
+        synchronized(lockObj) { // only one thread will be allowed
+            int local = common; // data race eliminated
+            local = local + 1;
+            common = local;
+        }
+    }
+}
+\end{lstlisting}
+    While the above code properly prevents data races, it would be incorrect to rewrite the code as follows:
+    \begin{lstlisting}
+public class DataRace extends Thread {
+    static int common = 0;
+    static Object lockObj = new Object(); // all threads use lockObj’s lock
+    public void run() {
+        synchronized(lockObj) { 
+            int local = common; 
+        }
+        synchronized(lockObj) {
+            local = local + 1;
+            common = local;
+        }
+    }
+}
+\end{lstlisting}
+    As demonstrated, we must perform either all of the operations associated with a critical section at once or none of them. The process of acquiring the lock and performing all of the operations is known as an \vocab{atomic transaction}. 
+    \item Suppose a thread holding a lock is unable to obtain the lock held by another thread and vice versa. This might occur if the thread holding the lock is waiting for an action to be performed by the other thread waiting for the lock, so it cannot let go of the lock. Such an occurrence is known \vocab{deadlock}, and in this case, the program is unable to continue execution.
+\end{enumerate}

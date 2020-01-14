@@ -1,0 +1,156 @@
+\section{Wednesday, November 20, 2019}
+
+Today, we'll finish up concurrency, and we'll start graphs.
+
+\subsection{Deadlock}
+
+Last time, we introduced the notion of \vocab{deadlock} --- a state a situtation in which threads are blocked because each thread is holding onto a resource and waiting for another resource that has been acquired by another thread. Today, we will look at two examples of deadlock.
+
+Firstly, consider the following deadlock situation (the code segment below isn't real Java code, but it illustrates one of the primary ways in which deadlock can occur):
+
+\begin{lstlisting}
+/* Objects a and b are our locks. */
+Object a = new Object();
+Object b = new Object();
+
+Thread1() {
+    synchronized(a) {
+        synchronized(b) {
+            ...
+        }
+    }
+}
+
+Thread2() {
+    synchronized(b) {
+        synchronized(a) {
+            ...
+        }
+    }
+}
+\end{lstlisting}
+
+In this code segment, we see that there are two locks, \verb!a! and \verb!b!, which are to be shared between \verb!Thread1! and \verb!Thread2!. Furthermore, we see that there are two nested \verb!synchronized! blocks in the code that \verb!Thread1! and \verb!Thread2! execute. Suppose the scheduler begins to execute \verb!Thread1!'s code, and it enters the \verb!synchronized(a) { ... }! block. However, suppose it is preempted by the scheduler before it can enter the \verb!synchronized(b) { ... }! block. Now suppose the scheduler begins to execute \verb!Thread2!'s code, and say it enters its \verb!synchronized (b) { ... }! block. If this is the case, then we will enter a state of deadlock: \verb!Thread2! cannot continue its execution path since \verb!Thread1! has acquired the lock \verb!a! (it won't be able to execute the \verb!synchronized(a) { ... }! block), and the same goes for \verb!Thread1! since \verb!Thread2! has acquired the lock \verb!b!.  
+
+
+Here's another example of deadlock:
+
+\begin{lstlisting}
+void swap(Object a, Object b) {
+    Object local;
+    synchronized(a) {
+        synchronized(b) {
+            local = a; a = b; b = local;
+        }
+    }
+}
+
+Thread1() { swap(a, b); } // holds lock for a; waits for b.
+Thread2() { swap(b, a); } // holds lock for b; waits for a.
+\end{lstlisting}
+
+Why might this code result in a deadlock? Suppose we begin executing \verb!Thread1!'s code, and we enter the \verb!synchronized(a) { ... }! block. At this point, suppose \verb!Thread1! is preempted, and we enter \verb!Thread2!'s code. If we enter the \verb!synchronized(a) { ... }! block for \verb!Thread2!, then both of our locks will have been acquired, and we will enter a state of deadlock. This issue can be fixed, however, by switching \verb!Thread2!'s code to \verb!swap(a, b)! because whichever thread enters the outermost \verb!synchronized! block first will finish execution to completion. 
+
+
+What are some tips to avoid deadlock?
+\begin{itemize}
+    \item Try to avoid acquiring many locks when they aren't needed.
+    \item If you need to acquire several locks, acquire them in them in the same order in which you use them.
+\end{itemize}
+
+
+\subsection{Introduction to Graphs}
+
+A \vocab{graph} consists of a set of points (called nodes or vertices), which are interconnected by a set of lines known as edges. Edges can be \vocab{directed}, which means that they can only be traversed in one direction (whichever direction they are pointing towards) or \vocab{undirected}, which means that they can be traversed in either direction.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+    \node (A) at (0,0) {A};
+    \node (B) at (0,3) {B};
+    \node (C) at (2.5,4) {C};
+    \node (D) at (2.5,1) {D};
+\end{scope}
+
+\begin{scope}[>={Stealth[black]},
+              every node/.style={fill=white,circle},
+              every edge/.style={draw=red,very thick}]
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (A) edge (D);
+    \path [->] (D) edge (C);
+\end{scope}
+\end{tikzpicture}
+\caption{A Graph with Directed Edges}
+\end{figure}
+
+A graph can be \vocab{weighted}, which means that there's a cost associated with traversing each edge. This is usually represented in a graph by writing the \vocab{edge weight} corresponding to an edge directly beside the edge.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+    \node (A) at (0,0) {A};
+    \node (B) at (0,3) {B};
+    \node (C) at (2.5,4) {C};
+    \node (D) at (2.5,1) {D};
+\end{scope}
+
+\begin{scope}[>={Stealth[black]},
+              every node/.style={fill=white,circle},
+              every edge/.style={draw=red,very thick}]
+    \path [->] (A) edge node {$8$} (B);
+    \path [->] (C) edge node {$3$} (B);
+    \path [->] (A) edge node {$1$} (D);
+    \path [->] (D) edge node {$2$} (C);
+\end{scope}
+\end{tikzpicture}
+\caption{A Weighted Graph with Directed Edges}
+\end{figure}
+
+Weighted graphs are important since they help us model real-life scenarios. For example, suppose each vertex represents a city, and the edge weight between two vertices represents the distance between the two cities. We might be interested in finding the shortest path between two cities. 
+
+
+A \vocab{path} in a graph is a sequence of vertices $v_1, v_2, \ldots, v_k$ such that an edge exists between each pair of vertices. For example, in the weighted directed graph above, $A, D, C, B$ and $A, D$ are paths; however, $A, B$ is not a path.
+
+A \vocab{cycle} is a path that starts and ends at the same starting vertex with no repeating intermediate vertices.  Once again, looking at our previous graph, $A, D, C, B, A$ is a cycle, whereas $A, D$ isn't a cycle (but it's still a path). 
+
+A graph is called \vocab{acyclic} if there are no cycles in the graph. Here is an example of an acyclic graph:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+    \node (A) at (0,0) {A};
+    \node (B) at (0,3) {B};
+    \node (C) at (2.5,4) {C};
+\end{scope}
+
+\begin{scope}[>={Stealth[black]},
+              every node/.style={fill=white,circle},
+              every edge/.style={draw=red,very thick}]
+    \path [-] (A) edge  (B);
+    \path [-] (C) edge  (B);
+\end{scope}
+\end{tikzpicture}
+\caption{An Acyclic Graph}
+\end{figure}
+
+A graph is said to be \vocab{connected} if every node in the graph is reachable from every other node. A graph that is not connected is said to be \vocab{disconnected}. 
+
+
+Previously, we learned about trees, which are types of graphs (all trees are graphs but not all graphs are trees). The formal definition of a \vocab{tree} is an acyclic connected graph. 
+
+\subsection{Graph Traversal}
+
+Earlier, we saw how to traverse trees using breadth-first and depth-first traversals. Surprisingly, these two traversals also allow us to efficiently traverse graphs. Recall the following:
+
+\begin{itemize}
+    \item \vocab{Breadth-first search} visits from a source vertex, and it subsequently visits all vertices at distance $k$ before visiting any nodes of distance $k + 1$. The general approach is to visit all of the neighbors of the source vertex first, and keep the list of nodes to visit in a queue. We can view this as a series of expanding circles. The actual order in which the vertices at a given distance are processed is dependent on the order in which they are stored in their Adjacency Lists. 
+    \item \vocab{Depth-first search} visits all node on a path first. It backtracks when the path ends, and it keeps a list of nodes to visit in a stack. This can be implemented by recursively calling the depth-first search function on neighbors we visit, or we can use a stack data structure to keep track of which vertices to visit next.
+\end{itemize}
+
+In both algorithms, it's important to keep track of which vertices we've already visited so that we don't end up cycling (which could result in infinite loops or stack overflows). 
+
+The general graph traversal procedure is essentially the same for both breadth-first and depth-first search traversals. The only major thing that we're changing is that we're extracting the next vertex to process from a queue when performing breadth-first search and a stack when performing depth-first search. 

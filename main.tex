@@ -4,6 +4,7 @@
 \usepackage[shellescape]{gmp}
 \usepackage{titlesec}
 \usepackage{color}
+\usetikzlibrary{arrows.meta}
 \definecolor{editorGray}{rgb}{0.95, 0.95, 0.95}
 \definecolor{editorOcher}{rgb}{1, 0.5, 0} % #FF7F00 -> rgb(239, 169, 0)
 \definecolor{editorGreen}{rgb}{0, 0.5, 0} % #007C00 -> rgb(0, 124, 0)
@@ -80,11 +81,10 @@
   \notefront
   \tocandfigures
   
-  % August
-  \include{aug/aug27}%
-  \include{aug/aug30}%
-  
-% September
+% August
+\include{aug/aug27}%
+\include{aug/aug30}%
+% September 2 was labor day.
 \include{sep/sep04}%
 \include{sep/sep06}%
 \include{sep/sep09}%
@@ -92,13 +92,15 @@
 \include{sep/sep13}%
 \include{sep/sep16}%
 \include{sep/sep18}%
-% Missing September 20.
+\include{sep/sep20}%
 \include{sep/sep23}%
 \include{sep/sep25}%
+% Missing September 27, 30
 \include{sep/sep30}%
 % October
+% Missing Oct 2
 \include{oct/oct4}%
-\include{oct/oct7}%incomplete
+\include{oct/oct7}% incomplete
 \include{oct/oct9}%
 \include{oct/oct11}%
 \include{oct/oct14}
@@ -112,6 +114,21 @@
 % November
 \include{nov/nov1} % incomplete. polymorphic missing.
 \include{nov/nov6}
+% november 8 missing
+\include{nov/nov11}
+\include{nov/nov13}
+\include{nov/nov18}
+\include{nov/nov20}
+\include{nov/nov22}
+\include{nov/nov25}
+% december
+\include{dec/dec2}
+\include{dec/dec4}
+\include{dec/dec6}
 
+\begin{thebibliography}{9}
+\bibitem{effectivejava} 
+Bloch, Joshua. Effective java. Pearson Education India, 2016.
+\end{thebibliography}
 
 \end{document}

@@ -1,0 +1,77 @@
+\section{Wednesday, December 4, 2019}
+
+Today, we'll continue looking at sorting algorithms.
+
+\subsection{Quicksort}
+
+The quicksort algorithm works by repeatedly picking ``pivot elements" and partitioning the set of elements into three disjoint sets: the set of elements strictly less than the pivot, the set of elements equal to the element, and the set of elements strictly greater than the pivot element. We can subsequently place the elements less than the pivot to the left of the pivot, and the elements greater than the pivot to the right of the pivot. Ultimately, this results in an array in which the pivot is placed in the correct position (but the array isn't necessarily sorted). Next, we recursively call the quicksort algorithm on the elements that are less than the pivot, and the elements that are strictly greater than the pivot. Finally, we concatenate the three lists, and we're done.
+
+Quicksort runs in $\mathcal{O}(n^2)$ in the worst case and $\mathcal{O}(n\log(n))$ in the best case.
+
+ \subsection{Radix Sort}
+ 
+ Radix sort is the first algorithm that we will discuss that is not a comparison-based sorting algorithm. The algorithm decomposes a key $C$ into several components $C_1, C_2, \ldots, C_n$ (these could be digits if we're sorting integers or characters if we're sorting strings). Each possible component is assigned a bucket (for example, we could have $10$ buckets for each of the $10$ possible digits if we were sorting integers), and we distribute values into buckets according to the rightmost digit, second to rightmost digit, up until the first digit. However, it is very important to make sure that the distributing procedure that we are using is stable --- each bucket must retain the order in which it receives values.
+ 
+ To demonstrate, suppose we wish to sort the array of numbers \verb![122, 397, 220, 017, 512]!. In order to do so, we first create $10$ buckets $B_{0}, B_{1}, \ldots, B_{9}$ where bucket $B_{k}$ stands for the bucket for digit $k$.
+ 
+ \begin{itemize}
+     \item First, we distribute the values into buckets based on their rightmost digits. This means that \verb!220! gets placed into $B_0$, \verb!122! and \verb!512! get placed into $B_2$, and \verb!397! and \verb!017! get placed into $B_7$. The remaining buckets remain empty.
+     \item Next, we distribute values into buckets according to the middle digit. $B_1$ now contains \verb!512! and \verb!017!. $B_2$ now contains \verb!220! and \verb!122!. Finally, $B_9$ contains \verb!397!. All other buckets remain empty.
+     \item Finally, we distribute the values into buckets according to their leftmost digit. At this point, $B_0$ contains \verb!512!, $B_1$ contains \verb!122!, $B_2$ contains \verb!220!, $B_3$ contains \verb!397!, and $B_5$ contains \verb!512!. Our integers are now sorted; we can merge all of the buckets if we desire.
+ \end{itemize}
+ 
+ If each integer has $d$ digits and we're sorting an array of $n$ numbers, then this algorithm runs in $\mathcal{O}(d \times n)$ time. When $d$ is fixed and much smaller than $n$, this reduces to $\mathcal{O}(n)$. Radix sort has some disadvantages since the number of buckets depends on the number of possible components of a key ($10$ buckets for integers, $26$ buckets for words).
+ 
+ \subsection{Algorithmic Paradigms}
+ 
+Many algorithmic problems can be subdivided into two categories: \vocab{satisfiability} problems (i.e. ``is there a path from $A$ to $B$?") and \vocab{optimization problems} (i.e ``what is the shortest path from $A$ to $B$?"). Today, we will discuss \vocab{algorithmic paradigms}, which are general approachs to solving problem. These paradigms typically have two different structures: an \vocab{iterative} structure (in which we execute actions in a loop), or a \vocab{recursive} structure (in which we reapply actions to subproblems). 
+
+\subsubsection{Backtracking Algorithms}
+
+Backtracking is a general algorithm that incrementally builds candidates to the solutions and abandons candidates as soon as the algorithm determines that the candidate cannot possibly be completed to a valid solution. Backtracking is based on the depth-first recursive search algorithm, and such algorithms are generally structured like this:
+
+\begin{enumerate}
+    \item Test whether a solution has been found; if it has, then return the solution.
+    \item Otherwise, for each choice that can be made, make that choice and recur. If recursion returns a solution, return it.
+    \item If no choices remain, return failure.
+\end{enumerate}
+
+One way we might implement a method to check whether a path exists from vertex $A$ to vertex $F$ is with the following backtracking algorithm: Start at the vertex $A$. If the current vertex has an edge to $F$, return the path. Otherwise, select a neighbor node to be the current node, and recursively find a path from $X$ to $F$. Return false if there is no path from any neighbor of $X$.
+
+
+\subsubsection{Divide and Conquer}
+
+The divide and conquer approach to solving problems simply divides a large problem into smaller subproblems. These subproblems must be of the same type, and the subproblems do not necessarily need to overlap. We solve each subproblem recursively, and we ultimately combine the solutions to solve the original problem.
+
+Typically, divide and conquer algorithms contain two or more recursive calls; however, this is not always the case. 
+
+Mergesort and quicksort are examples of divide and conquer algorithms (we partition the array into two parts and recursively call our function on these two subarrays).
+
+\subsubsection{Dynamic Programming}
+
+Dynamic programming is an algorithmic paradigm that is very similar to divide and conquer; however, there are a few subtle differences. This paradigm is based on remembering past results and constructing solutions based on overlapping subproblems.
+
+The general approach to solving a problem with dynamic programming is as follows:
+
+\begin{enumerate}
+    \item Divide the problem into smaller subproblems. Like in a divide and conquer solution, these subproblems must be of the same type. However, unlike divide and conquer solutions, these subproblems must overlap.
+    \item Solve each subproblem recursively. If this subproblem is identical to a problem we've previously solved, this might just consist of looking up a solution from a table.
+    \item Combine solutions to solve the original problem, and store the solution to the problem.
+\end{enumerate}
+
+Dynamic programming is often used to solve optimization problems (i.e. counting the number of solutions, or finding a maximum or minimum). 
+
+Dijkstra's algorithm is an example of dynamic programming since we store the shortest path for later use. Another example is of dynamic programming can be a Fibonacci number calculator, which stores previously computed results. 
+
+
+\subsubsection{Greedy Algorithms}
+
+A greedy algorithm is a problem-solving strategy that uses the heuristic of making the locally optimal choice at each stage with the intent of finding the best global solution.
+
+While greedy algorithms are usually easy to implement, they often fail to find the correct solution. For example, suppose we live in a country which has a coin system consisting of $30$ cent coins, $20$ cent coins, $15$ cent coins, and $1$ cent coins. If we want to find the minimum number of coins to get to a number, one approach might be the greedy approach in which we take the highest number that still fits into our number. 
+
+For example, if we are trying to make $30$, the greedy algorithm would produce the correct answer: we would take one $30$ cent coin, and we'd be done. However, in this problem, the greedy algorithm does not always produce the correct answer --- if we were trying to make $40$ cents, then the optimal solution would be to take two $20$ cent coins. But the greedy solution will take one $30$ cent coin, and ten $1$ cent coins, which is clearly not optimal.
+
+A greedy algorithm that attempts to find the shortest path between two vertices would always pick the lowest-cost neighbor. However, this isn't guaranteed to be the best solution either. 
+
+Kruskal's algorithm and Prim's algorithm can be used to find the minimum spanning tree of a graph. These are algorithms in which which greedy solutions do work. While these are algorithms were not covered in this class, they demonstrate that we cannot always rule out greedy solutions.

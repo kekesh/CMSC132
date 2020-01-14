@@ -1,0 +1,57 @@
+\section{Friday, December 6, 2019}
+
+\subsection{More Algorithm Strategies}
+
+\subsubsection{Brute-force Algorithms}
+
+A brute-force algorithm is exactly what it sounds like --- it tries all possible candidates in order to find a solution. The general outline to a brute-force algorithm is as follows:
+
+\begin{enumerate}
+    \item Generate and evaluate possible solutions until one of the following conditions is true:
+    \item A satisfactory solution is found. 
+    \item A best solution is found.
+    \item All possible solutions have been exhausted (in this case, we return the best solution, or return failure if there is no satisfactory approach).
+\end{enumerate}
+
+As one may expect, brute-force solutions are typically the most expensive approach to solving problems. 
+
+While brute-force algorithms are computationally expensive, they are still important to study since they guarantee a correct solution (if any), and there are sometimes no better solutions available. 
+
+One instance in which a brute-force algorithm is used is the \vocab{travelling salesman problem}, which is stated as follows:
+\begin{quote}
+    ``Given a weighted undirected graph, find the lowest cost path visiting all of the nodes once."
+\end{quote}
+No polynomial-time algorithm exists to solve this problem, and the brute-force algorithm which runs in $\mathcal{O}(n!)$ time is a costly but correct way to solve this problem.  
+
+\subsubsection{Branch and Bound Algorithms}
+
+The branch and bound algorithm design paradigm systematically enumerates candidates of the state space, and it tracks the best current solution found. Subsequently, when examining a new solution, it eliminates (``prunes") partial solutions that cannot improve upon the best current solution.
+
+As an example, suppose we are finding the shortest path between two vertices $A$ and $B$ in a graph. The brute-force algorithm would enumerate all possible paths from $A$ and $B$ and pick the minimum cost path among all of these paths. However, a branch and bound algorithm would improve on this algorithm by keeping track of the current shortest path and pruning any partial paths whose cost already exceeds the best solution. 
+
+Branch and bound algorithms are good since if the solution is found early, the amount of searching necessary can be greatly reduced. However, they can be bad in the worst case where we don't find the best solution until we've almost entirely exhausted the search space.
+
+\subsubsection{Heuristic Algorithm}
+
+A heuristic algorithm is a technique that is typically used for solving a problem quickly when classical methods are far too slow. Heuristic algorithms often give us good approximations when classical methods fail to find any exact solution.
+
+Heuristic algorithms are based on trying to guide the search for a solution (heuristic $\implies$ ``rule of thumb"). Pretty much, we use our outside knowledge of the problem in attempt to find an approximate solution to a problem. 
+
+Heuristic algorithms are good since they typically outperform brute-force algorithms. However, they can be bad in the sense that they sometimes return \textit{approximations} rather than exact solutions. 
+
+\subsection{Effective Java}
+
+At this point, we're done with all of the course material. To wrap everything up, we will discuss some important Java programming conventions to keep in mind. These patterns to emulate and pitfalls to avoid come from \cite{effectivejava}.
+
+\begin{enumerate}
+    \item Always make sure you satisfy Java's \verb!hashCode! contract. This becomes a concern whenever you override the \verb!equals! method. If the \verb!hashCode! contract is not satisfied, any classes that use hashing (e.g. maps and sets) may exhibit undefined behavior. 
+    \item What does \verb!System.out.println('H' + 'a')! print? Somewhat surprisingly, it doesn't print out ``Ha" -- it prints out $169$. This happens because \verb!'H' + 'a' ! is evaluated as an \verb!int! (the sum of their ASCII values), and subsequently converted to a string. In order to avoid this, we must use string concatenation with care. At least one of the operands must be a \verb!String! to get what we want. 
+    \item What does \verb!System.out.println(2.00 - 1.10)! print out? The answer is $0.89999999$. Since decimal values can't be represented exactly in computers, there is a small margin of error when dealing with floats. Try to use \verb!BigDecimal!, \verb!int!, or \verb!long! types whenever floating point values aren't needed.
+    \item Favor immutability over mutability, composition over inheritance, and interfaces over abstract classes. Always override the \verb!toString! method when implementing classes in order to make your classes more pleasant to use and to make debugging easy.
+    \item Prefer lambdas to anonymous classes, and omit the type of lambda parameters unless their presence improves the program's clarity.
+    \item When implementing methods, check parameters for validity . Use overloading judiciously, and return zero-length arrays over null. 
+    \item Prefer primitive types to boxed primitives. Avoid floats and doubles if exact answers are required. Adhere to generally accepted naming conventions. Refer to objects by their interfaces.
+    \item Use exceptions only for exceptional conditions. Use checked exceptions for recoverable conditions and run-time exceptions for programming errors. Favor the use of standaard exceptions, and document all exceptions thrown by each method.
+    \item Avoid duplicate object creation. Try to reuse existing objects instead. This improves clarity and performance. In loops, the savings can be substantial. When writing an immutable class, don't provide any mutators. Ensure that no methods may be overriden by defining classes to be \verb!final!, fields to be \verb!final!, and fields to be \verb!private!.
+    \item Make classes immutable unless there's a good reason not to.
+\end{enumerate}

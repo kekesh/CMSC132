@@ -1,0 +1,260 @@
+\section{Monday, November 11, 2019}
+\subsection{Introduction to Multithreading}
+
+A \vocab{thread} is an execution path in a process, almost like a program inside of another program. Our environment has the ability to rapidly switch between threads giving the illusion that multiple tasks are being performed at once.
+
+Why would we want to create multiple threads? One reason is efficiency. Suppose there's one task that needs to be performed, but this task is dependent on another task's completion. Instead of having the computer hosting the second task do nothing but wait for the first task, we can utilize the thread that would be used to complete the second task to help complete the first task (or some other task). 
+
+As a motivating example, suppose we've designed a clock that works in our own timezone, but now we want to design four clocks, each of which represent a different timezone. Instead of copy-and-pasting the same code over and over again, we can instead use our one working clock and spawn four threads, each of which represent a different timezone. The program will allow each thread to run for the correct amount of time. Even if you only have one CPU, it will look like the clocks are moving at the same time since the environment rapidly switches between the threads. 
+
+
+The minimalistic representation of a thread consists of the \vocab{stack} and a \vocab{program counter}. The stack allows each thread to store its own variables and call functions, while the program counter points to the next instruction to execute. 
+
+
+Just about everything else is shared by threads. For example, threads share files. If one thread opens a file, that same file can be utilized by any other thread in our process. Moreover, threads share the heap. If one thread creates an object in the heap, another thread can use the same object. 
+
+\subsection{Using Threads in Java}
+
+There are two primary ways in which we can use threads in Java. The first way defines a class that extends the \verb!Thread! class. Once we extend this class, we must subsequently override the \verb!run! method in which we define what the thread does. The thread 
+
+Here's an example of a thread whose task is to just print a message a variable number of times:
+
+\begin{lstlisting}
+public class MessageThread extends Thread {
+	private String msg;
+	private int times;
+
+	public MessageThread(String msg, int times) {
+		this.msg = msg;
+		this.times = times;
+	}
+
+	/* We could have called print() in run */
+	public void run() {
+		for (int i = 0; i < times; i++) {
+			System.out.println(msg);
+		}
+	}
+}
+\end{lstlisting}
+
+Now to actually make a thread start doing its role, we must declare the object that extends the \verb!Thread! class, and we must call the \verb!.start()! method on the object. Here is a driver program that illustrates how we can use the \verb!MessageThread! class:
+
+\begin{lstlisting}
+public class Driver {
+	public static void main(String[] args) {
+		int times = 1000;
+
+		MessageThread msg1 = new MessageThread("Hello", times);
+		MessageThread msg2 = new MessageThread("Bienvenidos", times);
+
+		msg1.start();
+		msg2.start();
+
+		System.out.println("Driver done");
+	}
+}
+\end{lstlisting}
+
+In the code above, we create two \verb!MessageThread! objects, namely, \verb!msg1! and \verb!msg2!. We then run the \verb!.start()! method in order to signal that we want the thread to start performing their task (this is important --- we do \textbf{not} directly call \verb!.run()!; we call \verb!.start()!, and the \verb!run! method will get executed for us). It's important to note that just calling \verb!.start()! doesn't necessarily start the thread's execution sequence either; it simply tells the compiler that we want the thread to do its job as soon as possible. What gets printed out in this example? During execution, the environment will rapidly switch back and forth between which thread gets execution time. There is no one deterministic output that gets printed out every time. With high probability, we can expect the \verb!Hello! and \verb!Bienvenidos! messages to get interweaved with each other.
+
+
+While the previous technique to define threads (by extending the \verb!Thread! class) is fairly simple, it does not scale well particularly because Java classes can only extend one parent class. This can lead to complications if we're working with more intricate objects that have a large hierarchy. As an alternative, we can make a class implement the \verb!Runnable! interface and implement the \verb!run! method. Here's the same \verb!MessageThread! class, except now it implements the \verb!Runnable! interface:
+
+\begin{lstlisting}
+public class DisplayMessageTask implements Runnable {
+	private String msg;
+	private int times;
+
+	public DisplayMessageTask(String msg, int times) {
+		this.msg = msg;
+		this.times = times;
+	}
+
+	public void run() {
+		for (int i = 0; i < times; i++) {
+			System.out.println(msg);
+		}
+	}
+}
+\end{lstlisting}
+
+Note that a class that implements \verb!Runnable! is \textit{required} to implement the \verb!run! method (since \verb!Runnable! is an interface). Now another key difference is that, to start threads, we no longer call the \verb!start! method. Instead, we create a \verb!Thread! object, and we pass in the object implementing the \verb!Runnable! interface as a parameter. Here's an example:
+
+\begin{lstlisting}
+public class Driver {
+	public static void main(String[] args) {
+		int times = 1000;
+
+		DisplayMessageTask msg1Task = new DisplayMessageTask("Hello", times);
+		Thread msg1Tread = new Thread(msg1Task);
+
+		DisplayMessageTask msg2Task = new DisplayMessageTask("Bienvenidos", times);
+		Thread msg2Thread = new Thread(msg2Task);
+
+		/* Using lambda */
+		Thread msg3Thread = new Thread(() -> {
+			for (int i = 1; i <= 100; i++)
+				System.out.println("Hola");
+		});
+		
+		msg1Tread.start();
+		msg2Thread.start();
+		msg3Thread.start();
+
+		System.out.println("Driver done");
+	}
+}
+\end{lstlisting}
+
+Unlike before, once we create a \verb!DisplayMessageTask! object, we cannot just call \verb!.start()! directly on the \verb!DisplayMessageTask! object. Instead, we create \verb!Thread! objects with the \verb!DisplayMessageTask! object as a parameter, and we call \verb!.start()! on that thread object. The code above further illustrates that we can use pass in lambda expressions to instantiate \verb!Thread! objects just fine. 
+
+\subsection{Daemon Threads}
+
+We can further divide threads into two categories based on the duration for which the thread is doing its job:
+
+\begin{itemize}
+    \item A \vocab{daemon} thread has a task that is being performed for the entire duration of the program. For instance, if we boot up our computer, there are some really important tasks that always need to be worked on. he threads working on these tasks are daemon threads. In Java, daemon threads are eventually terminated by the JVM all user threads are completed. 
+    \item A thread that is not a daemon thread is called a \vocab{user} thread. 
+\end{itemize}
+
+In Java, we can specify whether a thread is a daemon thread by calling \verb!setDaemon()! before \verb!start()!. If we don't call this method, then the thread will be a user thread by default. 
+
+\subsection{Thread Scheduling}
+
+How does Java figure out which thread to execute, for how long, and when? This is done with a \vocab{scheduler}. While we aren't concerned with the specific implementation details of the scheduler, there are a couple of policies that some schedulers follow that we should be aware of:
+
+\begin{enumerate}
+    \item One type of scheduling is \vocab{non-preemptive scheduling}. This means that once we've given a thread the chance to run, the thread can hold the CPU for as long as it wants. In our printing example, this would mean that we would never achieve the interleaving of statements since a single thread will execute until completion before giving the other thread a chance to get ahold of the CPU. So how is non-preemptive scheduling even multithreading? Pretty much, the only way in which the execution of a program can jump between threads is by the thread explicitly telling the program to give another thread ahold of the CPU (in Java, this can be done with the \verb!.yield()! and \verb!.sleep()! functions).
+    \item \vocab{Preemptive scheduling} is a scheduling discipline in which the CPU can be taken away by a thread depending on what the scheduler deems to be important. Preemptive scheduling is often achieved by assigning priorities to the incoming threads and executing the threads from highest to lowest priority.
+\end{enumerate}
+
+Why should we use one type of scheduling over the other? There are pros and cons to both scheduling disciplines. In preemptive scheduling, the order in which threads are selected is indeterminate --- it is completely dependent on the scheduler. However, scheduling may not be fair; some threads may execute far more often than others. Also, some threads might indefinitely block other threads if the other threads always execute first (formally, this is known as the \vocab{starvation} of threads).
+
+
+\subsection{Sleeping, Joining, and Interrupting Threads}
+
+Consider the following code segment:
+
+\begin{lstlisting}
+public class ThreadNoJoin extends Thread {
+
+	public void run() {
+		for (int i = 1; i <= 3; i++) {
+			try {
+				sleep((int) (Math.random() * 3000));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println(i);
+		}
+	}
+
+	public static void main(String[] args) {
+		Thread thread1 = new ThreadNoJoin();
+		Thread thread2 = new ThreadNoJoin();
+
+		thread1.start();
+		thread2.start();
+
+		System.out.println("Done");
+	}
+}
+\end{lstlisting}
+
+The \verb!run! method above prints the numbers \verb!1!, \verb!2!, and \verb!3!, while waiting a random amount of time between each printing operation. Why do we call \verb!sleep!? Because it permits the scheduler to pick another thread. Ultimately, this permits us to see an interleaving of our messages. 
+
+It is important to keep in mind that \verb!sleep! is a static method which means that it is shared with all instances of \verb!Thread! objects. As a consequence, this means that the instance variable that is invoking the \verb!sleep! method may not be the one going to sleep --- the current \verb!Thread! object executing its task will be the one to go to sleep. This is a common mistake that occurs when programmers are new to multithreading. To be more explicit, if we declare \verb!t1! to be a \verb!Thread! object, calling \verb!t1.sleep(2000)! will make whichever thread is currently executing (not necessarily \verb!t1! itself) go to sleep for $2000$ milliseconds. 
+
+
+There is an issue with the code we just presented: we don't know when the threads are being finished. This means that the \verb!Done! statement that we are printing our after both \verb!start()! calls can possibly (and will probably) appear before both threads finish execution. The solution to this problem is the use of the \verb!.join()! method, which tells the \verb!main! function to wait until a thread finishes executing. 
+
+Consider the following modified code:
+
+\begin{lstlisting}
+public class ThreadJoin extends Thread {
+
+	public void run() {
+		for (int i = 1; i <= 3; i++) {
+			try {
+				sleep((int) (Math.random() * 3000));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println(i);
+		}
+	}
+
+	public static void main(String[] args) {
+		Thread thread1 = new ThreadJoin();
+		Thread thread2 = new ThreadJoin();
+
+		thread1.start();
+		thread2.start();
+
+		try {
+			thread1.join();
+			thread2.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Done");
+	}
+}
+\end{lstlisting}
+
+This code will now execute how we want it to. More specifically, we know that both threads will have finished execution after our \verb!.join()! calls, which means that the ``\verb!Done!" that gets printed will happen after both threads finish execution. 
+
+It is very important to note that all of the threads must be started at once and subsequently, all of the threads must be joined at once. If we instead wrote \verb!thread1.start()!, \verb!thread1.join()!, \verb!thread2.start()!, and \verb!thread2.join()! in that order, we would no longer be multithreading. Instead, we would just be letting \verb!thread1! finish its task deterministically, and subsequently letting \verb!thread2! finish its task deterministically. Just to emphasize:
+
+\begin{quote}
+    If you want to run many threads concurrently, start them all at once and subsequently join them all at once. Do NOT start one thread, call join on that thread, start the next one, call join that thread, etc.
+\end{quote}
+
+
+By default, a thread ends when its \verb!run()! method ends. But, what happens if we need to stop a thread before it ends (maybe we've created several threads to find a solution and once a solution is found, there is no need for the other threads)? In the past, there was a \verb!stop()! method; however, it caused many problems. It is now a deprecated method, and we should not use it. Instead, we should use the \verb!.interrupt()! method. 
+
+Here's an example that illustrates where interrupting threads might be useful:
+
+\begin{lstlisting}
+import javax.swing.JOptionPane;
+
+public class InterruptExample extends Thread {
+	private int power;
+
+	public InterruptExample(int power) {
+		this.power = power;
+	}
+
+	public void run() {
+		int value = 1;
+		String answer;
+
+		while (!interrupted()) {
+			answer = getName() + value + " raised to power " + power + ": ";
+			answer += Math.pow(value, power);
+			System.out.println(answer);
+			value = ++value % 100;
+		}
+	}
+
+	public static void main(String[] args) {
+		Thread t1 = new InterruptExample(2);
+		t1.setName("FIRST-->");
+
+		Thread t2 = new InterruptExample(3);
+		t2.setName("SECOND-->");
+
+		t1.start();
+		t2.start();
+
+		JOptionPane.showMessageDialog(null, "Press OK to stop.");
+		t1.interrupt();
+		t2.interrupt();
+
+		JOptionPane.showMessageDialog(null, "Thank you for using our system.");
+	}
+}
+\end{lstlisting}
+ 
+In this example, our two threads will keep on computing powers until we click the \verb!OK! button in our pop-up box. At that point, we will interrupt both of our threads in order to terminate them. 
