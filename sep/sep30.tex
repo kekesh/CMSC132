@@ -1,1 +1,218 @@
 \section{Monday, September 30, 2019}
+
+Last time, we introduced generic programming. 
+
+
+Something to keep in mind is that if \verb!B! is a subtype of \verb!A! and \verb!GT! is a generic type declaration, it is not the case that \verb!GT<B>! is a substype of \verb!GT<A>!. For instance, if we declare \verb!ArrayList<String> strL = new ArrayList<String>()!, it would be illegal to write \verb!ArrayList<Object> objL = strL!.
+
+
+\subsection{Subtyping and Arrays}
+
+Generic subtyping also works for arrays. When it comes to arrays, we can use an assignment that goes against what we just said for \verb!ArrayLists!. For instance, suppose we have a class \verb!A! and another class \verb!B! which extends \verb!A!. If we subsequently declared \verb!A a = new B()!, \verb!B[] bB = new B[1]!, we would be able to assign \verb!A[] aB = bB!. However, we wouldn't be able to write \verb!bB[0] = a!. As a more concrete example, we're able to assign \verb!Object[] oO = sS!, where \verb!sS! was declared as \verb!String[] sS = new String[1]!.
+
+
+Consider the following \verb!Fruit! class:
+
+\begin{lstlisting}
+public class Fruit {
+	private String name;
+	private String color;
+
+	public String getName() {
+		return name;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public Fruit(String name, String color) {
+		this.name = name;
+		this.color = color;
+	}
+
+	public String toString() {
+		return name + " " + color;
+	}
+}
+\end{lstlisting}
+
+As one can see, the \verb!Fruit! class simply consists of a constructor, \verb!toString! method, and getter methods. Now consider the following \verb!TropicalFruit! class which extends this \verb!Fruit! class:
+
+\begin{lstlisting}
+public class TropicalFruit extends Fruit {
+	private String tropicalArea;
+
+	public TropicalFruit(String name, String color, String tropicalArea) {
+		super(name, color);
+		this.tropicalArea = tropicalArea;
+	}
+
+	public String toString() {
+		return super.toString() + " " + tropicalArea;
+	}
+}
+\end{lstlisting}
+
+The \verb!TropicalFruit! subclass has its own constructor, and it has a slightly modified \verb!toString! method. 
+
+In order to explore what is legal in subtyping, we can try a variety of array and \verb!ArrayList! operations with the \verb!Fruit! type and \verb!TropicalFruit! subtype. This is shown in the driver below:
+
+\begin{lstlisting}
+import java.util.ArrayList;
+
+public class Driver {
+	public static void main(String[] args) {
+		arrays();
+	}
+
+	public static void lists() {
+		// ArrayList<Fruit> fruitArrayList = new ArrayList<TropicalFruit>(); Compilation
+		// Error
+	}
+
+	public static void arrays() {
+		TropicalFruit[] tropicalFruitArray = new TropicalFruit[2];
+		tropicalFruitArray[0] = new TropicalFruit("mango", "yellow", "Caribbean");
+		tropicalFruitArray[1] = new TropicalFruit("banana", "yellow", "Caribbean");
+		Fruit[] fruitArray = tropicalFruitArray;
+		for (Fruit fruit : fruitArray)
+			System.out.println(fruit);
+		// tropicalFruitArray[0] = new Fruit("tomato", "red"); Compilation error
+
+		// fruitArray[0] = new Fruit("pear", "green"); Generates exception
+	}
+}
+\end{lstlisting}
+
+
+Firstly, observe that we cannot assign an \verb!ArrayList! of \verb!TropicalFruit! objects to an \verb!ArrayList! of \verb!Fruit! objects since you would be able to add something through the \verb!Fruit! reference that is not necessarily a \verb!TropicalFruit!. 
+ 
+Next, in the \verb!arrays! function, we define an array of \verb!TropicalFruit! objects, and we subsequently add two \verb!TropicalFruit! elements. Now note that it is valid to assign a \verb!TropicalFruitArray! to a \verb!FruitArray! for reasons we described earlier. Consequently, the subsequent enhanced for-loop works fine, and we are able to print out the fruits in \verb!fruitArray!. 
+
+Now look at the commented \verb!tropicalFruitArray[0] = new Fruit(...)! statement. This statement results in a compilation error since not every \verb!Fruit! is a \verb!Tropical! fruit. Finally, the last statement generates an exception since runtime error since we can't see that \verb!fruitArray! has a \verb!tropicalFruitArray! reference until runtime. If we were instead using generics and an \verb!ArrayList!, this error would be moved to compile time. 
+
+
+
+Here's another example. Consider the following \verb!Laptop! class:
+
+\begin{lstlisting}
+public class Laptop extends Computer implements PortableDevice {
+	private String batteryType;
+	
+	public Laptop(String maker, int serialNo, String batteryType) {
+		super(maker, serialNo);
+		this.batteryType = batteryType;
+	}
+
+	public String toString() {
+		return super.toString() + " " + batteryType;
+	}
+	
+	public int portabilityFactor() {
+		return 100;
+	}
+}
+\end{lstlisting}
+
+This \verb!Laptop! class implements the following \verb!PortableDevice! interface:
+
+\begin{lstlisting}
+public interface PortableDevice {
+	public int portabilityFactor();
+}
+\end{lstlisting}
+
+Moreover, the \verb!Laptop! class extends the following \verb!Computer! class:
+
+\begin{lstlisting}
+public class Computer {
+	private String maker;
+	private int serialNo;
+	
+	public Computer(String maker, int serialNo) {
+		super();
+		this.maker = maker;
+		this.serialNo = serialNo;
+	}
+	
+	public String toString() {
+		return maker + " " + serialNo;
+	}
+}
+\end{lstlisting}
+
+Now we want to explore whether various statements are valid or invalid in the driver that follows:
+
+\begin{lstlisting}
+import java.util.*;
+
+public class Wildcard {
+	public static void printComputers(ArrayList<Computer> cl) {
+		for (Computer c : cl) {
+			System.out.println(c);
+		}
+	}
+
+	public static void printComputersTwo(Collection<Computer> cl) {
+		for (Computer c : cl) {
+			System.out.println(c);
+		}
+	}
+
+	public static void printObjects(ArrayList<Object> cl) {
+		for (Object c : cl) {
+			System.out.println(c);
+		}
+	}
+
+	public static void printAny(ArrayList<?> cl) {
+		// cl.add(new Integer(10)); Would this work?
+		// cl.add(new Computer("CS", 10)); Would this work?
+		for (Object c : cl) {
+			System.out.println(c);
+		}
+	}
+
+	public static void printAnyComputer(ArrayList<? extends Computer> cl) {
+		for (Computer c : cl) {
+			System.out.println(c);
+		}
+	}
+
+	public static void printPortables(ArrayList<? extends PortableDevice> cl) {
+		for (PortableDevice p : cl) {
+			System.out.println(p);
+		}
+	}
+
+	public static void main(String[] args) {
+		Laptop laptop1 = new Laptop("Delly", 10, "BatA");
+		Computer computer1 = new Computer("ICM", 20);
+		ArrayList<Computer> computerList = new ArrayList<Computer>();
+		ArrayList<PortableDevice> portableList = new ArrayList<PortableDevice>();
+		portableList.add(laptop1);
+		computerList.add(laptop1);
+		computerList.add(computer1);
+		// printComputers(computerList); // Valid or Invalid?
+		// printComputersTwo(computerList); // Valid or Invalid?
+		// printObjects(computerList); // Valid or Invalid?
+		// printAny(computerList); // Valid or Invalid?
+		// printAnyComputer(computerList); // Valid or Invalid?
+		// printAnyComputer(portableList); // Valid or Invalid?
+		// printPortables(computerList); // Valid or Invalid?
+		// printPortables(portableList); // Valid or Invalid?
+	}
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item The statement \verb!printComputers(computerList)! is valid since we have an \verb!ArrayList! of computers, and we're passing an \verb!ArrayList! of computers. There is nothing to worry about here.
+    \item The statement \verb!printComputersTwo(computerList)! is valid since an \verb!ArrayList! is a \verb!Collection!, so passing an \verb!ArrayList! is perfectly fine. 
+    \item The statement \verb!printObjects(computerList)! is invalid since, if we were to allow that, then we would be able to add items that are not computers into our \verb!ArrayList! inside of the method.
+    \item The statement \verb!printAny(computerList)! is valid. By writing \verb!ArrayList<?>!, we can pass in an \verb!ArrayList! of any type. We wouldn't be able to modify the \verb!ArrayList! in the method since, otherwise, we'd end up with the same problem that the previous statement had (we are essentially in a ``read-only" mode).
+    \item The statement \verb!printAnyComputer(computerList)! is valid since the \verb!Computer! type satisfies the bounded wildcard in the function header.
+    \item The statement \verb!printAnyComputer(portableList)! is not valid since a portable device is not a computer; the bounded wildcard in the function header is not satisfied.
+    \item The statement \verb!printPortables(computerList)! is not valid since a \verb!Computer! is not a \verb!PortableDevice!.
+    \item The statement \verb!printPortables(portableList)! is valid since \verb!PortableDevice! objects are portable.
+\end{itemize}
