@@ -2,4 +2,40 @@
 
 \subsection{Dijkstra's Algorithm}
 
-x
+\vocab{Dijkstra's algorithm} is a single-source shortest path algorithm. This algorithm operates on graphs, and it finds the shortest path from one starting location to all other locations. Why is this useful? 
+\begin{itemize}
+    \item We can find the shortest route in a map (by representing cities as vertices and roads as edges in a graph)
+    \item We can find the lowest cost trip by making the edge weights on a graph the cost it takes to go from one place to another.
+\end{itemize}
+
+Before beginning the execution of the algorithm, we initialize the following variables and data structures:
+
+\begin{itemize}
+    \item A source node $s$ is selected (this is the vertex from which we will compute distances to other vertices). 
+    \item An array of distances from the source node to every other node is initialized. Let's call this array \verb!dist!. We set \verb!dist[s] = 0! and \verb!dist[v] = INFINITY! for every other vertex $v \neq s$. This is done at the beginning of the algorithm, and as the algorithm proceeds, these distances will be recalculated and finalized when the shortest distance is found.
+    \item A queue $Q$ of all nodes in the graph is initialized. At the end of the algorithm, the queue $Q$ will be empty.
+    \item A set $S$ is initialized (it is empty to begin with). This set is used to indicate which nodes have been visited. At the end of the algorithm, $S$ will contain every vertex in the graph.
+\end{itemize}
+
+Now the algorithm proceeds as follows:
+
+\begin{itemize}
+    \item While $Q$ isn't empty, pop the node $v$ with the smallest value of \verb!dist[v]! that isn't already in the set of visited nodes $S$. Note that in the first iteration, $s$ will always be chosen since \verb!dist[s]! is initially $0$. However, this will not be true in the second (or subsequent) iterations.
+    \item Add the node that we just popped into the set $S$ so that we don't process this vertex again on the next iteration.
+    \item For each vertex $u$ adjacent to vertex $v$, if \verb!dist[v] + weight(u, v) < dist[u]!, then a new minimal distance has been found from $s$ to $u$, so we can update \verb!dist[u]! with the new value. 
+\end{itemize}
+
+
+A fully traced out example of Dijkstra's algorithm can be seen on the class webpage.
+
+Now some questions that might come to mind are the following:
+
+\begin{itemize}
+    \item How do we efficiently extract the vertex with the minimum value of \verb!dist[v]!? Typically, this is done using a priority queue (which is implemented using a min heap). Java provides us with the \verb!PriorityQueue! class that we can use.
+    \item What happens if, while processing a node, one of the adjacent nodes belongs to the set $S$? This neighboring vertex won't be processed.
+    \item What's the runtime of Dijkstra's algorithm? $\mathcal{O}(E + V\log(V))$. The $E$ term comes from the $E$ edges that we must look at, and the $V\log(V)$ comes from the $V$ ``extract minimum distance" operations that we perform.
+    \item When does Dijkstra's algorithm not work? Dijkstra's algorithm fails for graphs with negative edge weights. If our input graph has negative edge weights, we can use another single source shortest path algorithm, like the Bellman-Ford algorithm: \url{https://en.wikipedia.org/wiki/Bellman\%E2\%80\%93Ford_algorithm}
+    \item What happens if a vertex has a self-loop? We don't process that edge --- we only look at \textit{neighbors} of that vertex. Also, the vertex would be in the set $S$ anyways, so it wouldn't get processed on the next iteration. 
+\end{itemize}
+
+

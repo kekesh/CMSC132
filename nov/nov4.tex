@@ -1,0 +1,115 @@
+\section{Monday, November 4, 2019}
+
+For the past couple of lectures, we have been talking about binary search trees. Today, we'll take a short break, and we'll look at an implementation of a polymorphic linked list.
+
+\subsection{Polymorphic Linked Lists}
+
+First, we will introduce an unsorted polymorphic linked list.
+
+When dealing with polymorphic linked lists, we typically create an empty list in order to avoid having to use \verb!null!. In memory, this means that our linked list has the nodes with data we care about, and the linked list is subsequently terminated by an empty list. 
+
+Consider the following \verb!EmptyList! class:
+
+
+\begin{lstlisting}
+public class EmptyList<K extends Comparable<K>> implements List<K> {
+	
+	public EmptyList() {
+		/* Nothing to do */
+	}
+	
+	public boolean contains(K data) {
+		return false;
+	}
+
+	public NonEmptyList<K> insert(K data) {
+		return new NonEmptyList<K>(data, this);
+	}
+
+	public List<K> remove(K data) {
+		return this;
+	}
+
+	public K max() throws ListIsEmptyException {
+		throw new ListIsEmptyException();
+	}
+	
+	public String toString() {
+		return "";
+	}
+}
+\end{lstlisting}
+
+The key things to note about this class are listed below:
+\begin{itemize}
+    \item Since the list is always empty, we don't need to do anything when we instantiate the list (addin and deleting elements from an empty list isn't supported).
+    \item We have defined our own exception which is thrown when we try to find the maximum value in our empty list. We shouldn't be too worried about how this exception is implemented.
+    \item Since there are no elements in the empty list, our \verb!toString()! method simply returns the empty string.
+    \item The \verb!contains! method always returns false since the empty list cannot contain anything.
+    \item When we remove an element from an empty list, we just return the empty list itself.
+\end{itemize}
+
+Next, let's look at our implementation of a non empty list:
+
+\begin{lstlisting}
+public class NonEmptyList<K extends Comparable<K>> implements List<K> {
+	private K data;
+	private List<K> rest;
+	
+	public NonEmptyList(K data, List<K> rest) {
+		this.data = data;
+		this.rest = rest;
+	}
+
+	public boolean contains(K data) {
+		if (data.compareTo(this.data) == 0) {
+			return true;
+		}
+		
+		return rest.contains(data);
+	}
+
+	public NonEmptyList<K> insert(K data) {
+		rest = rest.insert(data);
+		return this;
+	}
+
+	public List<K> remove(K data) {
+		if (data.compareTo(this.data) == 0) {
+			return rest;
+		}
+		 
+		rest = rest.remove(data);
+		return this;	
+	}
+	
+	public K max() {
+		try {
+			K value = rest.max();
+			if (data.compareTo(value) >= 0) {
+				return data;
+			}
+			
+			return value;
+		} catch (ListIsEmptyException e) {
+			return data;
+		}
+	}
+	
+	public String toString() {
+		return data + "|" + rest;
+	}
+}
+\end{lstlisting}
+
+A \verb!NonEmptyList! is a class that keeps track of the user's data as well as a reference to the tail of the linked list.  
+
+The key things to note about the \verb!NonEmptyList! class are listed below:
+
+\begin{itemize}
+    \item The constructor of a \verb!NonEmptyList! consists of a \verb!data! field and a reference to the rest of the list. Note that this is pretty much identical to how we implement non-polymorphic linked lists, except that we are replacing \verb!null! (which used to terminate the linked list) with an empty list.
+    \item The \verb!contains! function works by recursively comparing each node's data to the value we are searching for.
+    \item Similarly, note that the \verb!insert! method works by recursively calling itself. Note that it would be invalid to just write \verb!rest.insert(data)! since we need to update the head of the linked list to point to the newly added element. 
+    \item The \verb!remove! function performs a search similar to the \verb!contains! function, and returning the first half of the list prepended to the part of the list directly after the element that we are searching for.
+    \item The \verb!tostring! method and \verb!max! methods are also recursively defined functions; however, they are not too hard to decipher.
+\end{itemize}
